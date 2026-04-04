@@ -1,68 +1,63 @@
-const ACCESS_TOKEN_KEY = 'qudarti_access_token'
-const REFRESH_TOKEN_KEY = 'qudarti_refresh_token'
+import axios from 'axios'
 
-const getBaseUrl = () => {
-  if (typeof process === 'undefined') return ''
-  return process.env.NEXT_PUBLIC_API_BASE_URL || ''
-}
+const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 
-export const setTokens = (access, refresh) => {
-  if (typeof window === 'undefined') return
-  if (access) {
-    window.localStorage.setItem(ACCESS_TOKEN_KEY, access)
-  }
-  if (refresh) {
-    window.localStorage.setItem(REFRESH_TOKEN_KEY, refresh)
-  }
-}
+export const api = axios.create({
+  baseURL: BASE,
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 15000,
+})
 
-export const getAccessToken = () => {
-  if (typeof window === 'undefined') return null
-  return window.localStorage.getItem(ACCESS_TOKEN_KEY)
-}
-
-export const clearTokens = () => {
-  if (typeof window === 'undefined') return
-  window.localStorage.removeItem(ACCESS_TOKEN_KEY)
-  window.localStorage.removeItem(REFRESH_TOKEN_KEY)
-}
-
-export const apiFetch = async (path, options = {}) => {
-  const baseUrl = getBaseUrl()
-  const url = path.startsWith('http') ? path : `${baseUrl}${path}`
-
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(options.headers || {}),
-  }
-
-  const token = getAccessToken()
-  if (token && !headers.Authorization) {
-    headers.Authorization = `Bearer ${token}`
-  }
-
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  })
-
-  if (!response.ok) {
-    let message = 'Request failed'
-    try {
-      const data = await response.json()
-      message = data?.message || data?.detail || message
-    } catch {
-      // ignore parse errors
+// Attach token
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const raw = localStorage.getItem('qud-auth')
+    if (raw) {
+      const { state } = JSON.parse(raw)
+      if (state?.token) config.headers.Authorization = `Bearer ${state.token}`
     }
-    const error = new Error(message)
-    error.status = response.status
-    throw error
   }
+  return config
+})
 
-  const contentType = response.headers.get('content-type') || ''
-  if (contentType.includes('application/json')) {
-    return response.json()
+// Auto-refresh on 401
+api.interceptors.response.use(
+  (res) => res,
+  async (err) => {
+    const orig = err.config
+    if (err.response?.status === 401 && !orig._retry) {
+      orig._retry = true
+      try {
+        const raw = localStorage.getItem('qud-auth')
+        if (!raw) throw new Error('no session')
+        const { state } = JSON.parse(raw)
+        const { data } = await axios.post(`${BASE}/auth/token/refresh/`, { refresh: state.refreshToken })
+        const parsed = JSON.parse(raw)
+        parsed.state.token = data.access
+        localStorage.setItem('qud-auth', JSON.stringify(parsed))
+        orig.headers.Authorization = `Bearer ${data.access}`
+        return api(orig)
+      } catch {
+        if (typeof window !== 'undefined') window.location.href = '/auth/login'
+      }
+    }
+    const msg = err.response?.data?.detail
+      || Object.values(err.response?.data || {}).flat().join(', ')
+      || err.message
+      || 'Request failed'
+    return Promise.reject(new Error(msg))
   }
+)
 
-  return response.text()
+export const get = (url, params) => api.get(url, { params }).then(r => r.data)
+export const post = (url, body) => api.post(url, body).then(r => r.data)
+export const put = (url, body) => api.put(url, body).then(r => r.data)
+export const patch = (url, body) => api.patch(url, body).then(r => r.data)
+export const del = (url) => api.delete(url).then(r => r.data)
+
+export const download = async (url, params, filename) => {
+  const res = await api.get(url, { params, responseType: 'blob' })
+  const href = URL.createObjectURL(res.data)
+  Object.assign(document.createElement('a'), { href, download: filename }).click()
+  URL.revokeObjectURL(href)
 }

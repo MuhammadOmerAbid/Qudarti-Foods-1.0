@@ -1,30 +1,39 @@
-import { useEffect, useState } from 'react'
+'use client'
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
-const listeners = new Set()
+export const useAuthStore = create(
+  persist(
+    (set, get) => ({
+      user: null,
+      token: null,
+      refreshToken: null,
 
-let state = {
-  user: null,
-}
+      setAuth: (user, token, refreshToken) =>
+        set({ user, token, refreshToken }),
 
-const setState = (partial) => {
-  state = { ...state, ...partial }
-  listeners.forEach((listener) => listener(state))
-}
+      logout: () => {
+        set({ user: null, token: null, refreshToken: null })
+        if (typeof window !== 'undefined') window.location.href = '/auth/login'
+      },
 
-export const useAuthStore = () => {
-  const [snapshot, setSnapshot] = useState(state)
+      hasPermission: (perm) => {
+        const { user } = get()
+        if (!user) return false
+        if (user.role === 'superuser') return true
+        return user.permissions?.includes(perm) ?? false
+      },
 
-  useEffect(() => {
-    const listener = (nextState) => {
-      setSnapshot(nextState)
-    }
-    listeners.add(listener)
-    return () => listeners.delete(listener)
-  }, [])
-
-  return {
-    user: snapshot.user,
-    setUser: (user) => setState({ user }),
-    clearUser: () => setState({ user: null }),
-  }
-}
+      isSuperuser: () => get().user?.role === 'superuser',
+      canEdit: () => {
+        const u = get().user
+        return u?.role === 'superuser' || u?.can_edit === true
+      },
+      canDelete: () => {
+        const u = get().user
+        return u?.role === 'superuser' || u?.can_delete === true
+      },
+    }),
+    { name: 'qud-auth' }
+  )
+)
