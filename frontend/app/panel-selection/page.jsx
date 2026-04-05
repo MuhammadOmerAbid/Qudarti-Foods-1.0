@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { useAuthStore } from '@/store/authStore'
 
 // Icons as simple SVG components
 const MonitorIcon = () => (
@@ -38,6 +39,7 @@ const EyeOffIcon = () => (
 
 export default function PanelSelectPage() {
   const router = useRouter()
+  const { user, setPanel } = useAuthStore()
   const [selected, setSelected] = useState('store')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
@@ -46,11 +48,10 @@ export default function PanelSelectPage() {
 
   // Check if user is logged in
   useEffect(() => {
-    const user = localStorage.getItem('user')
     if (!user) {
-      router.push('/login')
+      router.push('/auth/login')
     }
-  }, [router])
+  }, [user, router])
 
   useEffect(() => {
     const handler = (e) => {
@@ -72,8 +73,7 @@ export default function PanelSelectPage() {
     
     // For prototype, accept any non-empty password on panel select
     if (password === 'admin123' || password === 'user123') {
-      // Store selected panel info
-      localStorage.setItem('selectedPanel', selected)
+      setPanel(selected)
       router.push('/dashboard')
     } else {
       setError('Wrong Password. Please verify your credentials.')
@@ -87,7 +87,6 @@ export default function PanelSelectPage() {
     }
   }
 
-  const user = localStorage.getItem('user')
   if (!user) return null
 
   const panels = [

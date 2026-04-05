@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import s from './LoginPage.module.css'
+import { useAuthStore } from '@/store/authStore'
+import { authApi } from '@/lib/api/endpoints'
 
 // ─── Global brand config ────
 const BRAND = {
@@ -12,6 +14,7 @@ const BRAND = {
 
 export default function LoginPage() {
   const router = useRouter()
+  const { setAuth } = useAuthStore()
 
   const [form, setForm] = useState({ username: '', password: '' })
   const [loading, setLoading] = useState(false)
@@ -44,8 +47,11 @@ export default function LoginPage() {
     }
     setLoading(true); setError('')
     try {
-      await new Promise(r => setTimeout(r, 1000))
-      localStorage.setItem('user', JSON.stringify({ username: form.username, role: 'super_user' }))
+      const data = await authApi.login(form.username, form.password)
+      if (!data?.access || !data?.refresh || !data?.user) {
+        throw new Error('Invalid login response')
+      }
+      setAuth(data.user, data.access, data.refresh)
       router.push('/panel-selection')
     } catch (err) {
       setError(err.message || 'Invalid username or password')
