@@ -8,6 +8,36 @@ export const api = axios.create({
   timeout: 15000,
 })
 
+// Helper functions for token management
+export const setTokens = (access, refresh) => {
+  if (typeof window !== 'undefined') {
+    const authData = {
+      state: {
+        token: access,
+        refreshToken: refresh
+      }
+    }
+    localStorage.setItem('qud-auth', JSON.stringify(authData))
+  }
+}
+
+export const getTokens = () => {
+  if (typeof window !== 'undefined') {
+    const raw = localStorage.getItem('qud-auth')
+    if (raw) {
+      const { state } = JSON.parse(raw)
+      return { access: state?.token, refresh: state?.refreshToken }
+    }
+  }
+  return null
+}
+
+export const clearTokens = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('qud-auth')
+  }
+}
+
 // Attach token
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
