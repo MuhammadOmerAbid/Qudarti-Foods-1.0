@@ -16,171 +16,158 @@ import {
   ChevronRight,
   LayoutDashboard,
   BoxIcon,
-} from "lucide-react"
+  User,
+} from 'lucide-react'
 
 const NAV_ITEMS = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-  { id: "gate-inward", label: "Gate Inward", icon: ArrowDownToLine, path: "/gate-inward" },
-  { id: "goods-requisition", label: "Goods Requisition", icon: ClipboardList, path: "/goods-requisition" },
-  { id: "daily-production", label: "Daily Production", icon: Factory, path: "/daily-production" },
-  { id: "finished-goods", label: "Finished Goods", icon: Package, path: "/finished-goods" },
-  { id: "gate-outward", label: "Gate Outward", icon: ArrowUpFromLine, path: "/gate-outward" },
-  { id: "production-order", label: "Production Order", icon: BoxIcon, path: "/production-order" },
-  { id: "inventory", label: "Inventory", icon: Warehouse, path: "/inventory" },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+  { id: 'gate-inward', label: 'Gate Inward', icon: ArrowDownToLine, path: '/gate-inward' },
+  { id: 'goods-requisition', label: 'Goods Requisition', icon: ClipboardList, path: '/goods-requisition' },
+  { id: 'daily-production', label: 'Daily Production', icon: Factory, path: '/daily-production' },
+  { id: 'finished-goods', label: 'Finished Goods', icon: Package, path: '/finished-goods' },
+  { id: 'gate-outward', label: 'Gate Outward', icon: ArrowUpFromLine, path: '/gate-outward' },
+  { id: 'production-order', label: 'Production Order', icon: BoxIcon, path: '/production-order' },
+  { id: 'inventory', label: 'Inventory', icon: Warehouse, path: '/inventory' },
 ]
 
-const BRANDING = {
-  logoIcon: "/qudartinew.png",
-  appName: "Qudrati Foods"
-}
-
-export default function AppSidebar() {
-  const [collapsed, setCollapsed] = useState(false)
+export default function AppSidebar({ collapsed, setCollapsed }) {
   const { user, logout } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
+  const [logoHover, setLogoHover] = useState(false)
 
   const visibleItems = NAV_ITEMS.filter((item) => {
-    if (item.id === "dashboard") return true
-    if (user?.role === "superuser") return true
+    if (item.id === 'dashboard') return true
+    if (user?.role === 'superuser') return true
     return user?.permissions?.includes(item.id)
   })
 
-  const handleNavigation = (path) => {
-    router.push(path)
-  }
-
-  const handleLogout = () => {
-    logout()
-    router.push('/auth/login')
-  }
+  const handleNavigation = (path) => router.push(path)
+  const handleLogout = () => { logout(); router.push('/auth/login') }
 
   return (
     <aside
-      style={{
-        ...styles.sidebar,
-        width: collapsed ? '64px' : '240px',
-      }}
+      className="app-sidebar"
+      style={{ ...styles.sidebar, width: 'var(--sidebar-w, 248px)' }}
     >
-      {/* Logo Section */}
-      <div style={styles.logoSection}>
-        <img 
-          src={BRANDING.logoIcon} 
-          alt="Q" 
-          style={styles.logoIcon}
-        />
+      {/* Logo */}
+      <div
+        style={styles.logoSection}
+        onMouseEnter={() => setLogoHover(true)}
+        onMouseLeave={() => setLogoHover(false)}
+      >
+        <button
+          type="button"
+          onClick={() => setCollapsed(!collapsed)}
+          style={styles.logoMarkBtn}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {logoHover ? (
+            collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />
+          ) : (
+            <img src="/qudartinew.png" alt="Q" style={styles.logoImg} />
+          )}
+        </button>
         {!collapsed && (
-          <span style={styles.appName}>
-            {BRANDING.appName}
-          </span>
+          <div style={styles.logoText}>
+            <span style={styles.appName}>Qudrati</span>
+            <span style={styles.appSub}>Foods</span>
+          </div>
         )}
       </div>
+
+      {/* Nav Label */}
+      {!collapsed && <p style={styles.navLabel}>MAIN MENU</p>}
 
       {/* Navigation */}
       <nav style={styles.nav}>
         {visibleItems.map((item) => {
           const active = pathname === item.path
-          const IconComponent = item.icon
-          
+          const Icon = item.icon
+          const btnStyle = {
+            ...styles.navBtn,
+            ...(active ? styles.navBtnActive : {}),
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            padding: collapsed ? '10px 0' : '9px 14px',
+            gap: collapsed ? '0' : '10px',
+          }
           return (
             <button
               key={item.id}
               onClick={() => handleNavigation(item.path)}
               title={collapsed ? item.label : undefined}
-              style={{
-                ...styles.navButton,
-                ...(active ? styles.navButtonActive : styles.navButtonInactive),
-                justifyContent: collapsed ? 'center' : 'flex-start',
-              }}
+              style={btnStyle}
               onMouseEnter={(e) => {
-                if (!active) {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'
-                }
+                if (!active) e.currentTarget.style.backgroundColor = '#f0faf0'
               }}
               onMouseLeave={(e) => {
-                if (!active) {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                }
+                if (!active) e.currentTarget.style.backgroundColor = 'transparent'
               }}
             >
-              <IconComponent size={20} style={styles.navIcon} />
-              {!collapsed && <span>{item.label}</span>}
+              <span style={{ ...styles.iconWrap, ...(active ? styles.iconWrapActive : {}) }}>
+                <Icon size={17} strokeWidth={active ? 2.2 : 1.8} />
+              </span>
+              {!collapsed && <span style={styles.navLabel2}>{item.label}</span>}
+              {!collapsed && active && <span style={styles.activePill} />}
             </button>
           )
         })}
 
-        {/* Settings (Superuser only) */}
-        {user?.role === "superuser" && (
+        {user?.role === 'superuser' && (
           <button
-            onClick={() => handleNavigation("/settings")}
-            title={collapsed ? "Settings" : undefined}
+            onClick={() => handleNavigation('/settings')}
+            title={collapsed ? 'Settings' : undefined}
             style={{
-              ...styles.navButton,
-              ...(pathname?.startsWith("/settings") ? styles.navButtonActive : styles.navButtonInactive),
+              ...styles.navBtn,
+              ...(pathname?.startsWith('/settings') ? styles.navBtnActive : {}),
               justifyContent: collapsed ? 'center' : 'flex-start',
+              padding: collapsed ? '10px 0' : '9px 14px',
+              gap: collapsed ? '0' : '10px',
             }}
             onMouseEnter={(e) => {
-              if (!pathname?.startsWith("/settings")) {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'
-              }
+              if (!pathname?.startsWith('/settings')) e.currentTarget.style.backgroundColor = '#f0faf0'
             }}
             onMouseLeave={(e) => {
-              if (!pathname?.startsWith("/settings")) {
-                e.currentTarget.style.backgroundColor = 'transparent'
-              }
+              if (!pathname?.startsWith('/settings')) e.currentTarget.style.backgroundColor = 'transparent'
             }}
           >
-            <Settings size={20} style={styles.navIcon} />
-            {!collapsed && <span>Settings</span>}
+            <span style={{ ...styles.iconWrap, ...(pathname?.startsWith('/settings') ? styles.iconWrapActive : {}) }}>
+              <Settings size={17} strokeWidth={1.8} />
+            </span>
+            {!collapsed && <span style={styles.navLabel2}>Settings</span>}
           </button>
         )}
       </nav>
 
-      {/* Bottom Section */}
+      {/* Bottom */}
       <div style={styles.bottomSection}>
-        {/* Collapse Toggle Button */}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          style={styles.bottomButton}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-          }}
-        >
-          {collapsed ? (
-            <ChevronRight size={18} />
-          ) : (
-            <ChevronLeft size={18} />
-          )}
-          {!collapsed && <span>Collapse</span>}
-        </button>
-
-        {/* Logout Button */}
-        <button
-          onClick={handleLogout}
-          style={styles.bottomButton}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-          }}
-        >
-          <LogOut size={18} />
-          {!collapsed && <span>Logout</span>}
-        </button>
-
-        {/* User Info */}
+        {/* User card */}
         {!collapsed && user && (
-          <div style={styles.userInfo}>
-            <div style={styles.username}>{user.username}</div>
-            <div style={styles.userRole}>
-              {user.role === "superuser" ? "Super User" : "User"}
+          <div style={styles.userCard}>
+            <div style={styles.userAvatar}>
+              <User size={14} color="#fff" />
+            </div>
+            <div style={styles.userMeta}>
+              <span style={styles.username}>{user.username}</span>
+              <span style={styles.userRole}>{user.role === 'superuser' ? 'Super User' : 'User'}</span>
             </div>
           </div>
         )}
+        <button
+          onClick={handleLogout}
+          style={{
+            ...styles.logoutBtn,
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            padding: collapsed ? '10px 0' : '9px 14px',
+            gap: collapsed ? '0' : '10px',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fff0f0')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+        >
+          <LogOut size={16} color="#e53e3e" />
+          {!collapsed && <span style={styles.logoutText}>Logout</span>}
+        </button>
       </div>
     </aside>
   )
@@ -191,127 +178,193 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     height: '100vh',
-    backgroundColor: '#1F2937',
-    borderRight: '1px solid #374151',
-    transition: 'width 0.3s ease',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    zIndex: 30,
+    backgroundColor: '#ffffff',
+    borderRight: '1px solid #e8f5e9',
+    transition: 'width 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
     overflow: 'hidden',
+    flexShrink: 0,
+    boxShadow: '2px 0 12px rgba(84,180,91,0.06)',
   },
   logoSection: {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
     height: '64px',
-    padding: '0 16px',
-    borderBottom: '1px solid #374151',
-  },
-  logoIcon: {
-    width: '32px',
-    height: '32px',
+    padding: '0 14px',
+    borderBottom: '1px solid #e8f5e9',
     flexShrink: 0,
   },
+  logoMark: {
+    width: '34px',
+    height: '34px',
+    borderRadius: '9px',
+    background: 'linear-gradient(135deg, #54B45B, #3d9144)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    overflow: 'hidden',
+  },
+  logoMarkBtn: {
+    width: '34px',
+    height: '34px',
+    borderRadius: '9px',
+    background: 'linear-gradient(135deg, #54B45B, #3d9144)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    overflow: 'hidden',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#ffffff',
+  },
+  logoImg: {
+    width: '28px',
+    height: '28px',
+    objectFit: 'contain',
+  },
+  logoText: {
+    display: 'flex',
+    flexDirection: 'column',
+    lineHeight: 1,
+  },
   appName: {
-    fontSize: '18px',
-    fontWeight: 'bold',
-    letterSpacing: '-0.5px',
-    color: '#FFFFFF',
-    whiteSpace: 'nowrap',
+    fontSize: '15px',
+    fontWeight: '800',
+    color: '#1a2e1b',
+    letterSpacing: '-0.3px',
+  },
+  appSub: {
+    fontSize: '11px',
+    color: '#54B45B',
+    fontWeight: '600',
+    letterSpacing: '0.5px',
+  },
+  navLabel: {
+    fontSize: '10px',
+    fontWeight: '700',
+    color: '#9ca3af',
+    letterSpacing: '1px',
+    padding: '16px 16px 6px',
+    margin: 0,
   },
   nav: {
     flex: 1,
     overflowY: 'auto',
-    padding: '12px 8px',
+    padding: '4px 8px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '4px',
+    gap: '2px',
   },
-  navButton: {
+  navBtn: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    gap: '10px',
     width: '100%',
-    padding: '10px 12px',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: 500,
+    padding: '9px 14px',
+    borderRadius: '9px',
+    fontSize: '13.5px',
+    fontWeight: '500',
     border: 'none',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.18s ease',
     background: 'transparent',
-    color: '#D1D5DB',
+    color: '#4b5563',
     whiteSpace: 'nowrap',
+    position: 'relative',
+    textAlign: 'left',
   },
-  navButtonActive: {
-    backgroundColor: '#374151',
-    color: '#FFFFFF',
+  navBtnActive: {
+    backgroundColor: '#f0fdf4',
+    color: '#2d7a33',
+    fontWeight: '600',
   },
-  navButtonInactive: {
-    backgroundColor: 'transparent',
-    color: '#D1D5DB',
-  },
-  navIcon: {
+  iconWrap: {
+    width: '32px',
+    height: '32px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '7px',
+    color: '#6b7280',
     flexShrink: 0,
+    transition: 'all 0.18s',
+  },
+  iconWrapActive: {
+    backgroundColor: '#dcfce7',
+    color: '#2d7a33',
+  },
+  navLabel2: {
+    flex: 1,
+  },
+  activePill: {
+    width: '6px',
+    height: '6px',
+    borderRadius: '50%',
+    backgroundColor: '#54B45B',
   },
   bottomSection: {
-    borderTop: '1px solid #374151',
-    padding: '8px',
+    borderTop: '1px solid #e8f5e9',
+    padding: '10px 8px',
     display: 'flex',
     flexDirection: 'column',
     gap: '4px',
   },
-  bottomButton: {
+  userCard: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    width: '100%',
-    padding: '10px 12px',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: 500,
-    border: 'none',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    background: 'transparent',
-    color: '#D1D5DB',
-    whiteSpace: 'nowrap',
+    gap: '10px',
+    padding: '10px 10px',
+    borderRadius: '9px',
+    backgroundColor: '#f8fffe',
+    marginBottom: '4px',
   },
-  userInfo: {
-    padding: '12px',
-    marginTop: '4px',
+  userAvatar: {
+    width: '30px',
+    height: '30px',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #54B45B, #3d9144)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  userMeta: {
+    display: 'flex',
+    flexDirection: 'column',
   },
   username: {
-    fontSize: '12px',
-    fontWeight: 500,
-    color: '#FFFFFF',
-    marginBottom: '4px',
+    fontSize: '12.5px',
+    fontWeight: '600',
+    color: '#1a2e1b',
   },
   userRole: {
     fontSize: '11px',
-    color: '#9CA3AF',
-    textTransform: 'capitalize',
+    color: '#54B45B',
+    fontWeight: '500',
   },
-}
-
-// Add any global styles if needed
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement('style')
-  styleSheet.textContent = `
-    /* Custom scrollbar for sidebar */
-    div[style*="overflow-y: auto"]::-webkit-scrollbar {
-      width: 4px;
-    }
-    
-    div[style*="overflow-y: auto"]::-webkit-scrollbar-track {
-      background: #374151;
-    }
-    
-    div[style*="overflow-y: auto"]::-webkit-scrollbar-thumb {
-      background: #6B7280;
-      border-radius: 2px;
-    }
-    
-    div[style*="overflow-y: auto"]::-webkit-scrollbar-thumb:hover {
-      background: #9CA3AF;
-    }
-  `
-  document.head.appendChild(styleSheet)
+  logoutBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    width: '100%',
+    padding: '9px 14px',
+    borderRadius: '9px',
+    fontSize: '13.5px',
+    fontWeight: '500',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.18s ease',
+    background: 'transparent',
+    color: '#e53e3e',
+    whiteSpace: 'nowrap',
+  },
+  logoutText: {
+    color: '#e53e3e',
+  },
 }
