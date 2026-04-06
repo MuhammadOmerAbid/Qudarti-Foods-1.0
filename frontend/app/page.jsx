@@ -17,7 +17,8 @@ export default function RootPage() {
     } else {
       router.replace('/auth/login')
     }
-  }, [token, user, panel, router])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, user, panel])
 
   return (
     <div className="min-h-screen bg-[var(--surface-2)] flex items-center justify-center">

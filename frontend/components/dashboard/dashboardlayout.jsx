@@ -12,11 +12,12 @@ export default function DashboardLayout({ children }) {
 
   useEffect(() => {
     if (!user) {
-      router.push('/auth/login')
+      router.replace('/auth/login')
     } else if (!panel) {
-      router.push('/panel-selection')
+      router.replace('/panel-selection')
     }
-  }, [user, panel, router])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, panel])
 
   useEffect(() => {
     if (typeof document !== 'undefined') {

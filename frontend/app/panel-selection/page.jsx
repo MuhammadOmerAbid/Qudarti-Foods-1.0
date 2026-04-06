@@ -46,12 +46,12 @@ export default function PanelSelectPage() {
   const [error, setError] = useState('')
   const passwordRef = useRef(null)
 
-  // Check if user is logged in
   useEffect(() => {
     if (!user) {
-      router.push('/auth/login')
+      router.replace('/auth/login')
     }
-  }, [user, router])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
 
   useEffect(() => {
     const handler = (e) => {
@@ -96,6 +96,23 @@ export default function PanelSelectPage() {
 
   return (
     <div style={styles.root}>
+      <style>{`
+        @keyframes subtleFloat {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+          50% { transform: translate(20px, -15px) scale(1.05); opacity: 0.6; }
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-4px); }
+          40% { transform: translateX(4px); }
+          60% { transform: translateX(-2px); }
+          80% { transform: translateX(2px); }
+        }
+        input:focus {
+          border-color: #22c55e !important;
+          box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1) !important;
+        }
+      `}</style>
       {/* Background Image with Blur */}
       <Image
         src="/background.png"
@@ -474,45 +491,4 @@ const styles = {
     fontSize: '11px',
     color: 'rgba(255, 255, 255, 0.6)',
   },
-}
-
-// Add CSS animations to the document
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement('style')
-  styleSheet.textContent = `
-    @keyframes subtleFloat {
-      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
-      50% { transform: translate(20px, -15px) scale(1.05); opacity: 0.6; }
-    }
-    
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20% { transform: translateX(-4px); }
-      40% { transform: translateX(4px); }
-      60% { transform: translateX(-2px); }
-      80% { transform: translateX(2px); }
-    }
-    
-    input:focus {
-      border-color: #22c55e !important;
-      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1) !important;
-    }
-    
-    button:hover:not(:disabled) {
-      transform: translateY(-2px);
-    }
-    
-    .bgImage {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      pointer-events: none;
-      filter: blur(4px);
-      transform: scale(1.02);
-    }
-  `
-  document.head.appendChild(styleSheet)
 }
