@@ -8,12 +8,15 @@ export const useAuthStore = create(
       user: null,
       token: null,
       refreshToken: null,
+      panel: null,
 
       setAuth: (user, token, refreshToken) =>
         set({ user, token, refreshToken }),
 
+      setPanel: (panel) => set({ panel }),
+
       logout: () => {
-        set({ user: null, token: null, refreshToken: null })
+        set({ user: null, token: null, refreshToken: null, panel: null })
         if (typeof window !== 'undefined') window.location.href = '/auth/login'
       },
 
