@@ -1,0 +1,376 @@
+'use client'
+
+import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
+import DashboardLayout from '@/components/dashboard/dashboardlayout'
+import { useAuthStore } from '@/store/authStore'
+import {
+  ArrowDownToLine, Plus, Eye, Trash2, RotateCcw,
+  FileText, Download, Search, Calendar, Filter,
+  ChevronDown, Edit2, X, CheckSquare, Square, FileSpreadsheet
+} from 'lucide-react'
+
+const MOCK_SUPPLIERS = [
+  { id: 1, name: 'Soghat Enterprises', address: 'Plot 12, Industrial Area, Lahore' },
+  { id: 2, name: 'Al-Faisal Trading', address: 'Shop 5, Main Market, Karachi' },
+  { id: 3, name: 'Hassan & Sons', address: 'Block C, Gulberg III, Lahore' },
+]
+const MOCK_BRANDS = [
+  { id: 1, name: 'Soghat' },
+  { id: 2, name: 'General' },
+  { id: 3, name: 'Premium' },
+]
+const MOCK_CATEGORIES = [
+  { id: 1, brandId: 2, name: 'Seal' },
+  { id: 2, brandId: 1, name: 'Bottle' },
+  { id: 3, brandId: 1, name: 'Sticker' },
+  { id: 4, brandId: 3, name: 'Carton' },
+]
+const MOCK_PRODUCTS = [
+  { id: 1, categoryId: 1, name: '69 mm Seal' },
+  { id: 2, categoryId: 1, name: '72 MM Seal' },
+  { id: 3, categoryId: 2, name: '500ml Bottle' },
+  { id: 4, categoryId: 2, name: '1L Bottle' },
+  { id: 5, categoryId: 3, name: 'Front Sticker' },
+  { id: 6, categoryId: 4, name: 'Standard Carton' },
+]
+const MOCK_UNITS = ['Unit', 'Bags', 'Carton', 'Dozen', 'KG', 'Litre']
+
+const INITIAL_RECORDS = [
+  { id: 1, grNo: 'QUD1', supplierId: 1, supplierName: 'Soghat Enterprises', address: 'Plot 12, Industrial Area, Lahore', note: 'First delivery', receiveDate: '27/05/2025', status: 'Received', items: [{ brandId: 2, brandName: 'General', categoryId: 1, categoryName: 'Seal', productId: 1, productName: '69 mm seal', quantity: 12000, unit: 'Unit' }] },
+  { id: 2, grNo: 'QUD2', supplierId: 2, supplierName: 'Al-Faisal Trading', address: 'Shop 5, Main Market, Karachi', note: '', receiveDate: '27/05/2025', status: 'Received', items: [{ brandId: 2, brandName: 'General', categoryId: 1, categoryName: 'Seal', productId: 2, productName: '72 MM Seal', quantity: 9800, unit: 'Unit' }, { brandId: 2, brandName: 'General', categoryId: 1, categoryName: 'Seal', productId: 1, productName: '69 mm seal', quantity: 10500, unit: 'Unit' }] },
+  { id: 3, grNo: 'QUD3', supplierId: 1, supplierName: 'Soghat Enterprises', address: 'Plot 12, Industrial Area, Lahore', note: 'Urgent order', receiveDate: '27/05/2025', status: 'Pending', items: [{ brandId: 2, brandName: 'General', categoryId: 1, categoryName: 'Seal', productId: 2, productName: '72 MM Seal', quantity: 1300, unit: 'Unit' }] },
+  { id: 4, grNo: 'QUD4', supplierId: 3, supplierName: 'Hassan & Sons', address: 'Block C, Gulberg III, Lahore', note: '', receiveDate: '27/05/2025', status: 'Received', items: [{ brandId: 2, brandName: 'General', categoryId: 1, categoryName: 'Seal', productId: 1, productName: '69 mm seal', quantity: 1200, unit: 'Unit' }] },
+  { id: 5, grNo: 'QUD5', supplierId: 1, supplierName: 'Soghat Enterprises', address: 'Plot 12, Industrial Area, Lahore', note: '', receiveDate: '03/06/2025', status: 'Received', items: [{ brandId: 2, brandName: 'General', categoryId: 1, categoryName: 'Seal', productId: 1, productName: '69 mm seal', quantity: 1230, unit: 'Unit' }] },
+  { id: 6, grNo: 'QUD6', supplierId: 2, supplierName: 'Al-Faisal Trading', address: 'Shop 5, Main Market, Karachi', note: 'Old stock', receiveDate: '08/06/1999', status: 'Pending', items: [{ brandId: 2, brandName: 'General', categoryId: 1, categoryName: 'Seal', productId: 2, productName: '72 MM Seal', quantity: 33, unit: 'Bags' }] },
+]
+
+function fmtItems(items, field) { return items.map(i => i[field]).join(', ') }
+function fmtQty(items) { return items.map(i => `${i.quantity} ${i.unit}`).join(', ') }
+
+export default function GateInwardPage() {
+  const router = useRouter()
+  const { user } = useAuthStore()
+  const isSuperUser = user?.role === 'superuser'
+
+  const [records, setRecords] = useState(INITIAL_RECORDS)
+  const [search, setSearch] = useState('')
+  const [filterStatus, setFilterStatus] = useState('All Status')
+  const [filterBrand, setFilterBrand] = useState('All Brands')
+  const [filterCategory, setFilterCategory] = useState('All Categories')
+  const [filterDateFrom, setFilterDateFrom] = useState('')
+  const [filterDateTo, setFilterDateTo] = useState('')
+  const [selected, setSelected] = useState([])
+  const [viewRecord, setViewRecord] = useState(null)
+  const [editRecord, setEditRecord] = useState(null)
+  const [showReportPanel, setShowReportPanel] = useState(false)
+
+  const allBrands = useMemo(() => [...new Set(records.flatMap(r => r.items.map(i => i.brandName)))], [records])
+  const allCategories = useMemo(() => [...new Set(records.flatMap(r => r.items.map(i => i.categoryName)))], [records])
+
+  const parseDate = (str) => { const [d, m, y] = str.split('/'); return new Date(`${y}-${m}-${d}`) }
+
+  const filtered = useMemo(() => records.filter(r => {
+    const hay = [r.grNo, r.supplierName, r.address, r.note, r.receiveDate, r.status, ...r.items.map(i => `${i.brandName} ${i.categoryName} ${i.productName} ${i.quantity} ${i.unit}`)].join(' ').toLowerCase()
+    const matchSearch = !search || hay.includes(search.toLowerCase())
+    const matchStatus = filterStatus === 'All Status' || r.status === filterStatus
+    const matchBrand = filterBrand === 'All Brands' || r.items.some(i => i.brandName === filterBrand)
+    const matchCategory = filterCategory === 'All Categories' || r.items.some(i => i.categoryName === filterCategory)
+    let matchDate = true
+    if (filterDateFrom) matchDate = matchDate && parseDate(r.receiveDate) >= new Date(filterDateFrom)
+    if (filterDateTo) matchDate = matchDate && parseDate(r.receiveDate) <= new Date(filterDateTo)
+    return matchSearch && matchStatus && matchBrand && matchCategory && matchDate
+  }), [records, search, filterStatus, filterBrand, filterCategory, filterDateFrom, filterDateTo])
+
+  const toggleSelect = (id) => setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id])
+  const toggleAll = () => setSelected(s => s.length === filtered.length ? [] : filtered.map(r => r.id))
+  const handleDelete = (id) => { if (window.confirm('Delete this record?')) setRecords(r => r.filter(x => x.id !== id)) }
+  const handleBulkDelete = () => {
+    if (!selected.length) return
+    if (window.confirm(`Delete ${selected.length} selected records?`)) { setRecords(r => r.filter(x => !selected.includes(x.id))); setSelected([]) }
+  }
+  const handleSaveEdit = (updated) => { setRecords(r => r.map(x => x.id === updated.id ? updated : x)); setEditRecord(null) }
+
+  const exportRows = selected.length > 0 ? records.filter(r => selected.includes(r.id)) : filtered
+
+  const exportCSV = (rows) => {
+    const headers = ['GR No', 'Supplier', 'Address', 'Brand', 'Category', 'Product', 'Quantity', 'Receive Date', 'Status', 'Note']
+    const lines = rows.flatMap(r => r.items.map(item => [r.grNo, r.supplierName, r.address, item.brandName, item.categoryName, item.productName, `${item.quantity} ${item.unit}`, r.receiveDate, r.status, r.note].map(v => `"${v}"`).join(',')))
+    const csv = [headers.join(','), ...lines].join('\n')
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'gate-inward-report.csv'; a.click()
+  }
+
+  const exportPDF = (rows) => {
+    const win = window.open('', '_blank')
+    win.document.write(`<html><head><title>Gate Inward Report</title><style>body{font-family:Arial;padding:20px;font-size:12px}h2{color:#2d7a33}table{width:100%;border-collapse:collapse;margin-top:16px}th{background:#f0fdf4;color:#1a2e1b;padding:8px;text-align:left;border-bottom:2px solid #bbf7d0}td{padding:7px 8px;border-bottom:1px solid #e5e7eb}.r{background:#dcfce7;color:#166534;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}.p{background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}</style></head><body><h2>Gate Inward Report</h2><p style="color:#6b7280">Generated: ${new Date().toLocaleDateString('en-PK')}</p><table><tr><th>GR No</th><th>Supplier</th><th>Brand</th><th>Category</th><th>Product</th><th>Quantity</th><th>Date</th><th>Status</th></tr>${rows.flatMap(r => r.items.map(item => `<tr><td>${r.grNo}</td><td>${r.supplierName}</td><td>${item.brandName}</td><td>${item.categoryName}</td><td>${item.productName}</td><td>${item.quantity} ${item.unit}</td><td>${r.receiveDate}</td><td><span class="${r.status === 'Received' ? 'r' : 'p'}">${r.status}</span></td></tr>`)).join('')}</table></body></html>`)
+    win.document.close(); win.print()
+  }
+
+  const resetFilters = () => { setSearch(''); setFilterStatus('All Status'); setFilterBrand('All Brands'); setFilterCategory('All Categories'); setFilterDateFrom(''); setFilterDateTo(''); setSelected([]) }
+
+  return (
+    <DashboardLayout>
+      <div style={s.wrapper}>
+        {/* Header */}
+        <div style={s.pageHeader}>
+          <div>
+            <h1 style={s.pageTitle}><ArrowDownToLine size={20} color="#54B45B" style={{ marginRight: 8 }} />Gate Inwards</h1>
+            <p style={s.pageSubtitle}>View and manage Gate Inwards</p>
+          </div>
+          <div style={s.headerActions}>
+            <button style={s.iconBtn} title="Reset filters" onClick={resetFilters}><RotateCcw size={16} /></button>
+            <button style={s.reportBtn} onClick={() => setShowReportPanel(v => !v)}><Eye size={15} /> View Report</button>
+            <button style={s.addBtn} onClick={() => router.push('/gate-inward/new')}><Plus size={16} /> Add New Entry</button>
+          </div>
+        </div>
+
+        {/* Report Panel */}
+        {showReportPanel && (
+          <div style={s.reportPanel}>
+            <div style={s.reportRow}>
+              <span style={s.reportLabel}><FileText size={14} color="#2d7a33" />Export {selected.length > 0 ? `${selected.length} selected` : `all ${filtered.length} filtered`} records:</span>
+              <div style={s.reportBtns}>
+                <button style={s.csvBtn} onClick={() => exportCSV(exportRows)}><FileSpreadsheet size={14} /> Export CSV</button>
+                <button style={s.pdfBtn} onClick={() => exportPDF(exportRows)}><Download size={14} /> Export PDF</button>
+                {selected.length > 0 && <button style={s.deleteSelBtn} onClick={handleBulkDelete}><Trash2 size={14} /> Delete ({selected.length})</button>}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Filters */}
+        <div style={s.filtersRow}>
+          <div style={s.filterGroup}>
+            {[['filterStatus', filterStatus, setFilterStatus, ['All Status', 'Received', 'Pending']], ['filterBrand', filterBrand, setFilterBrand, ['All Brands', ...allBrands]], ['filterCategory', filterCategory, setFilterCategory, ['All Categories', ...allCategories]]].map(([key, val, setter, opts]) => (
+              <div key={key} style={{ position: 'relative' }}>
+                <select style={s.filterSelect} value={val} onChange={e => setter(e.target.value)}>
+                  {opts.map(o => <option key={o}>{o}</option>)}
+                </select>
+                <ChevronDown size={12} style={s.selectChevron} />
+              </div>
+            ))}
+          </div>
+          <div style={s.dateGroup}>
+            <div style={s.dateField}><Calendar size={13} color="#9ca3af" /><input type="date" style={s.dateInput} value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)} /></div>
+            <span style={{ color: '#9ca3af', fontSize: 12 }}>to</span>
+            <div style={s.dateField}><Calendar size={13} color="#9ca3af" /><input type="date" style={s.dateInput} value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} /></div>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div style={s.searchWrap}>
+          <Search size={15} color="#9ca3af" />
+          <input style={s.searchInput} placeholder="Search across all fields..." value={search} onChange={e => setSearch(e.target.value)} />
+          {search && <button style={s.clearBtn} onClick={() => setSearch('')}><X size={14} /></button>}
+        </div>
+
+        {/* Table */}
+        <div style={s.tableWrap}>
+          <table style={s.table}>
+            <thead>
+              <tr style={s.thead}>
+                <th style={{ ...s.th, width: 40 }}>
+                  <button style={s.checkBtn} onClick={toggleAll}>{selected.length === filtered.length && filtered.length > 0 ? <CheckSquare size={15} color="#54B45B" /> : <Square size={15} color="#9ca3af" />}</button>
+                </th>
+                {['Gr No', 'Supplier', 'Brand', 'Category', 'Product', 'Quantity', 'Receive Date', 'Status'].map(h => <th key={h} style={s.th}>{h}</th>)}
+                <th style={{ ...s.th, textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr><td colSpan={10} style={s.emptyCell}><div style={s.emptyState}><ArrowDownToLine size={32} color="#d1d5db" /><p style={{ margin: '8px 0 0', color: '#9ca3af', fontSize: 14 }}>No records found</p></div></td></tr>
+              ) : filtered.map(r => (
+                <tr key={r.id} style={{ ...s.tr, backgroundColor: selected.includes(r.id) ? '#f0fdf4' : '#fff' }}
+                  onMouseEnter={e => { if (!selected.includes(r.id)) e.currentTarget.style.backgroundColor = '#fafafa' }}
+                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = selected.includes(r.id) ? '#f0fdf4' : '#fff' }}>
+                  <td style={s.td}><button style={s.checkBtn} onClick={() => toggleSelect(r.id)}>{selected.includes(r.id) ? <CheckSquare size={15} color="#54B45B" /> : <Square size={15} color="#9ca3af" />}</button></td>
+                  <td style={{ ...s.td, fontWeight: 600, color: '#1a2e1b' }}>{r.grNo}</td>
+                  <td style={s.td}>{r.supplierName}</td>
+                  <td style={s.td}>{fmtItems(r.items, 'brandName')}</td>
+                  <td style={s.td}>{fmtItems(r.items, 'categoryName')}</td>
+                  <td style={s.td}>{fmtItems(r.items, 'productName')}</td>
+                  <td style={s.td}>{fmtQty(r.items)}</td>
+                  <td style={s.td}>{r.receiveDate}</td>
+                  <td style={s.td}><span style={{ ...s.badge, ...(r.status === 'Received' ? s.badgeGreen : s.badgeYellow) }}>{r.status}</span></td>
+                  <td style={{ ...s.td, textAlign: 'right' }}>
+                    <div style={s.actionBtns}>
+                      {isSuperUser && <button style={s.editBtn} title="Edit" onClick={() => setEditRecord(r)}><Edit2 size={14} /></button>}
+                      <button style={s.viewBtn2} title="View" onClick={() => setViewRecord(r)}><Eye size={14} /></button>
+                      <button style={s.delBtn} title="Delete" onClick={() => handleDelete(r.id)}><Trash2 size={14} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div style={s.tableFooter}>
+          <span style={s.footerText}>Showing {filtered.length} of {records.length} records{selected.length > 0 && <span style={s.selCount}> · {selected.length} selected</span>}</span>
+        </div>
+      </div>
+
+      {viewRecord && <ViewModal record={viewRecord} onClose={() => setViewRecord(null)} />}
+      {editRecord && isSuperUser && <EditModal record={editRecord} suppliers={MOCK_SUPPLIERS} brands={MOCK_BRANDS} categories={MOCK_CATEGORIES} products={MOCK_PRODUCTS} units={MOCK_UNITS} onClose={() => setEditRecord(null)} onSave={handleSaveEdit} />}
+    </DashboardLayout>
+  )
+}
+
+function ViewModal({ record, onClose }) {
+  return (
+    <div style={s.modalOverlay} onClick={onClose}>
+      <div style={s.modal} onClick={e => e.stopPropagation()}>
+        <div style={s.modalHeader}>
+          <div><h2 style={s.modalTitle}>Gate Inward — {record.grNo}</h2><p style={s.modalSub}>Record details</p></div>
+          <button style={s.modalClose} onClick={onClose}><X size={18} /></button>
+        </div>
+        <div style={s.modalBody}>
+          <div style={s.detailGrid}>
+            {[['GR Number', record.grNo], ['Receive Date', record.receiveDate], ['Status', record.status], ['Supplier', record.supplierName]].map(([l, v]) => (
+              <div key={l}><p style={s.detailLabel}>{l}</p><p style={s.detailValue}>{v}</p></div>
+            ))}
+            <div style={{ gridColumn: '1/-1' }}><p style={s.detailLabel}>Address</p><p style={s.detailValue}>{record.address}</p></div>
+            {record.note && <div style={{ gridColumn: '1/-1' }}><p style={s.detailLabel}>Note</p><p style={s.detailValue}>{record.note}</p></div>}
+          </div>
+          <p style={s.itemsTitle}>Items ({record.items.length})</p>
+          <table style={s.innerTable}>
+            <thead><tr>{['Brand', 'Category', 'Product', 'Quantity', 'Unit'].map(h => <th key={h} style={s.innerTh}>{h}</th>)}</tr></thead>
+            <tbody>{record.items.map((item, i) => (<tr key={i}><td style={s.innerTd}>{item.brandName}</td><td style={s.innerTd}>{item.categoryName}</td><td style={s.innerTd}>{item.productName}</td><td style={s.innerTd}>{item.quantity}</td><td style={s.innerTd}>{item.unit}</td></tr>))}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function EditModal({ record, suppliers, brands, categories, products, units, onClose, onSave }) {
+  const [form, setForm] = useState({ ...record, items: record.items.map(i => ({ ...i })) })
+
+  const updateItem = (idx, field, value) => {
+    const items = form.items.map((it, i) => i === idx ? { ...it, [field]: value } : it)
+    if (field === 'brandId') { const b = brands.find(b => b.id === Number(value)); items[idx].brandName = b?.name || ''; items[idx].categoryId = ''; items[idx].categoryName = ''; items[idx].productId = ''; items[idx].productName = '' }
+    if (field === 'categoryId') { const c = categories.find(c => c.id === Number(value)); items[idx].categoryName = c?.name || ''; items[idx].productId = ''; items[idx].productName = '' }
+    if (field === 'productId') { const p = products.find(p => p.id === Number(value)); items[idx].productName = p?.name || '' }
+    setForm(f => ({ ...f, items }))
+  }
+
+  return (
+    <div style={s.modalOverlay} onClick={onClose}>
+      <div style={{ ...s.modal, maxWidth: 740 }} onClick={e => e.stopPropagation()}>
+        <div style={s.modalHeader}>
+          <div><h2 style={s.modalTitle}>Edit — {record.grNo}</h2><p style={s.modalSub}>Super user edit mode</p></div>
+          <button style={s.modalClose} onClick={onClose}><X size={18} /></button>
+        </div>
+        <div style={s.modalBody}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+            <div><label style={s.label}>GR Number</label><input style={s.input} value={form.grNo} onChange={e => setForm(f => ({ ...f, grNo: e.target.value }))} /></div>
+            <div><label style={s.label}>Receive Date</label><input style={s.input} value={form.receiveDate} onChange={e => setForm(f => ({ ...f, receiveDate: e.target.value }))} /></div>
+            <div>
+              <label style={s.label}>Supplier</label>
+              <select style={s.input} value={form.supplierId} onChange={e => { const sup = suppliers.find(x => x.id === Number(e.target.value)); setForm(f => ({ ...f, supplierId: sup.id, supplierName: sup.name, address: sup.address })) }}>
+                {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={s.label}>Status</label>
+              <select style={s.input} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}><option>Received</option><option>Pending</option></select>
+            </div>
+            <div style={{ gridColumn: '1/-1' }}><label style={s.label}>Address</label><textarea style={{ ...s.input, height: 60, resize: 'vertical' }} value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} /></div>
+            <div style={{ gridColumn: '1/-1' }}><label style={s.label}>Note</label><textarea style={{ ...s.input, height: 55, resize: 'vertical' }} value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} /></div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#374151' }}>Items</p>
+            <button style={s.addItemBtn} onClick={() => setForm(f => ({ ...f, items: [...f.items, { brandId: '', brandName: '', categoryId: '', categoryName: '', productId: '', productName: '', quantity: '', unit: 'Unit' }] }))}><Plus size={13} /> Add Item</button>
+          </div>
+
+          {form.items.map((item, i) => {
+            const brandCats = categories.filter(c => c.brandId === Number(item.brandId))
+            const catProds = products.filter(p => p.categoryId === Number(item.categoryId))
+            return (
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 72px 80px 32px', gap: 8, marginBottom: 8, alignItems: 'end' }}>
+                <div><label style={s.label}>Brand</label><select style={s.input} value={item.brandId} onChange={e => updateItem(i, 'brandId', e.target.value)}><option value="">Brand</option>{brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select></div>
+                <div><label style={s.label}>Category</label><select style={s.input} value={item.categoryId} onChange={e => updateItem(i, 'categoryId', e.target.value)}><option value="">Category</option>{brandCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+                <div><label style={s.label}>Product</label><select style={s.input} value={item.productId} onChange={e => updateItem(i, 'productId', e.target.value)}><option value="">Product</option>{catProds.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+                <div><label style={s.label}>Qty</label><input style={s.input} type="number" value={item.quantity} onChange={e => updateItem(i, 'quantity', e.target.value)} /></div>
+                <div><label style={s.label}>Unit</label><select style={s.input} value={item.unit} onChange={e => updateItem(i, 'unit', e.target.value)}>{units.map(u => <option key={u}>{u}</option>)}</select></div>
+                <button style={s.removeItemBtn} onClick={() => setForm(f => ({ ...f, items: f.items.filter((_, idx) => idx !== i) }))}><X size={13} /></button>
+              </div>
+            )
+          })}
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
+            <button style={s.cancelBtn} onClick={onClose}>Cancel</button>
+            <button style={s.saveBtn} onClick={() => onSave(form)}>Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const s = {
+  wrapper: { maxWidth: 1280, margin: '0 auto' },
+  pageHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  pageTitle: { fontSize: 22, fontWeight: 800, color: '#1a2e1b', margin: '0 0 4px', display: 'flex', alignItems: 'center' },
+  pageSubtitle: { fontSize: 13, color: '#9ca3af', margin: 0 },
+  headerActions: { display: 'flex', alignItems: 'center', gap: 10 },
+  iconBtn: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 10px', cursor: 'pointer', color: '#6b7280', display: 'flex', alignItems: 'center' },
+  reportBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 16px', fontSize: 13.5, fontWeight: 600, color: '#374151', cursor: 'pointer' },
+  addBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#54B45B', border: 'none', borderRadius: 8, padding: '8px 18px', fontSize: 13.5, fontWeight: 600, color: '#fff', cursor: 'pointer' },
+  reportPanel: { background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '12px 18px', marginBottom: 16 },
+  reportRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 },
+  reportLabel: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500, color: '#1a2e1b' },
+  reportBtns: { display: 'flex', gap: 8 },
+  csvBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #86efac', borderRadius: 7, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: '#2d7a33', cursor: 'pointer' },
+  pdfBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#2d7a33', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer' },
+  deleteSelBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #fca5a5', borderRadius: 7, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: '#ef4444', cursor: 'pointer' },
+  filtersRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 12 },
+  filterGroup: { display: 'flex', gap: 8, flexWrap: 'wrap' },
+  filterSelect: { appearance: 'none', WebkitAppearance: 'none', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '7px 30px 7px 12px', fontSize: 13, color: '#374151', cursor: 'pointer', outline: 'none', fontWeight: 500 },
+  selectChevron: { position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#9ca3af' },
+  dateGroup: { display: 'flex', alignItems: 'center', gap: 8 },
+  dateField: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 10px' },
+  dateInput: { border: 'none', outline: 'none', fontSize: 13, color: '#374151', background: 'transparent', width: 120 },
+  searchWrap: { display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '9px 14px', marginBottom: 16 },
+  searchInput: { flex: 1, border: 'none', outline: 'none', fontSize: 13.5, color: '#374151', background: 'transparent' },
+  clearBtn: { background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', display: 'flex', padding: 0 },
+  tableWrap: { background: '#fff', borderRadius: 12, border: '1px solid #e8f5e9', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
+  table: { width: '100%', borderCollapse: 'collapse' },
+  thead: { background: '#f9fafb' },
+  th: { padding: '11px 14px', fontSize: 12.5, fontWeight: 700, color: '#374151', textAlign: 'left', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap' },
+  tr: { transition: 'background 0.15s' },
+  td: { padding: '11px 14px', fontSize: 13, color: '#4b5563', borderBottom: '1px solid #f3f4f6' },
+  badge: { display: 'inline-block', padding: '2px 10px', borderRadius: 20, fontSize: 11.5, fontWeight: 600 },
+  badgeGreen: { background: '#dcfce7', color: '#166534' },
+  badgeYellow: { background: '#fef9c3', color: '#854d0e' },
+  actionBtns: { display: 'flex', gap: 6, justifyContent: 'flex-end' },
+  editBtn: { background: '#eff6ff', border: '1px solid #bfdbfe', color: '#3b82f6', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', display: 'flex' },
+  viewBtn2: { background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#2d7a33', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', display: 'flex' },
+  delBtn: { background: '#fff5f5', border: '1px solid #fecaca', color: '#ef4444', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', display: 'flex' },
+  checkBtn: { background: 'none', border: 'none', cursor: 'pointer', display: 'flex', padding: 0 },
+  emptyCell: { textAlign: 'center', padding: '48px 0' },
+  emptyState: { display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  tableFooter: { padding: '10px 16px', borderTop: '1px solid #f3f4f6', background: '#fafafa' },
+  footerText: { fontSize: 12.5, color: '#9ca3af' },
+  selCount: { color: '#54B45B', fontWeight: 600 },
+  modalOverlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 },
+  modal: { background: '#fff', borderRadius: 14, width: '100%', maxWidth: 600, maxHeight: '88vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.18)' },
+  modalHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px 24px 16px', borderBottom: '1px solid #f3f4f6' },
+  modalTitle: { fontSize: 17, fontWeight: 800, color: '#1a2e1b', margin: 0 },
+  modalSub: { fontSize: 12.5, color: '#9ca3af', margin: '4px 0 0' },
+  modalClose: { background: '#f3f4f6', border: 'none', borderRadius: 8, padding: 6, cursor: 'pointer', color: '#6b7280', display: 'flex' },
+  modalBody: { padding: '20px 24px', overflowY: 'auto', flex: 1 },
+  detailGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 20px', marginBottom: 20 },
+  detailLabel: { fontSize: 11, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.6px', margin: '0 0 4px' },
+  detailValue: { fontSize: 14, color: '#1a2e1b', fontWeight: 500, margin: 0, padding: '6px 10px', background: '#f9fafb', borderRadius: 6, border: '1px solid #f3f4f6' },
+  itemsTitle: { fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 10 },
+  innerTable: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
+  innerTh: { padding: '8px 10px', background: '#f0fdf4', color: '#2d7a33', fontWeight: 700, fontSize: 11.5, textAlign: 'left', borderBottom: '1px solid #bbf7d0' },
+  innerTd: { padding: '8px 10px', borderBottom: '1px solid #f3f4f6', color: '#4b5563' },
+  label: { display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 4 },
+  input: { width: '100%', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 10px', fontSize: 13, color: '#1a2e1b', outline: 'none', boxSizing: 'border-box' },
+  addItemBtn: { display: 'flex', alignItems: 'center', gap: 5, background: '#f0fdf4', border: '1px solid #86efac', color: '#2d7a33', borderRadius: 7, padding: '5px 12px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' },
+  removeItemBtn: { background: '#fff5f5', border: '1px solid #fecaca', color: '#ef4444', borderRadius: 6, padding: '6px 8px', cursor: 'pointer', display: 'flex', alignSelf: 'flex-end' },
+  cancelBtn: { background: '#f3f4f6', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13.5, fontWeight: 600, color: '#374151', cursor: 'pointer' },
+  saveBtn: { background: '#54B45B', border: 'none', borderRadius: 8, padding: '9px 24px', fontSize: 13.5, fontWeight: 600, color: '#fff', cursor: 'pointer' },
+}
