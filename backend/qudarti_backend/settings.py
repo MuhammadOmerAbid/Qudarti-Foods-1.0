@@ -87,12 +87,14 @@ SIMPLE_JWT = {
   'BLACKLIST_AFTER_ROTATION': False,
 }
 
+CORS_DEFAULT_ORIGINS = 'http://localhost:3000,http://localhost:3001'
+
 CORS_ALLOWED_ORIGINS = [
-  o for o in os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+  o for o in os.getenv('CORS_ALLOWED_ORIGINS', CORS_DEFAULT_ORIGINS).split(',')
   if o
 ]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
-  o for o in os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000').split(',')
+  o for o in os.getenv('CSRF_TRUSTED_ORIGINS', CORS_DEFAULT_ORIGINS).split(',')
   if o
 ]
