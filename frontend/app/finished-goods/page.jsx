@@ -1,15 +1,15 @@
 'use client'
 
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
-import { InventoryPage } from '@/components/store/StorePages'
+import { FinishedGoodsPage } from '@/components/store/StorePages'
 import { useAuthStore } from '@/store/authStore'
 
-export default function InventoryRoutePage() {
+export default function FinishedGoodsRoutePage() {
   const { canDelete } = useAuthStore()
 
   return (
     <DashboardLayout>
-      <InventoryPage isSuperUser={canDelete()} />
+      <FinishedGoodsPage isSuperUser={canDelete()} />
     </DashboardLayout>
   )
 }

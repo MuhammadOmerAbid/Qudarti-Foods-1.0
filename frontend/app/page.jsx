@@ -5,9 +5,11 @@ import { useAuthStore } from '@/store/authStore'
 
 export default function RootPage() {
   const router = useRouter()
-  const { user, token, panel } = useAuthStore()
+  const { user, token, panel, hasHydrated } = useAuthStore()
 
   useEffect(() => {
+    if (!hasHydrated) return
+
     if (token && user) {
       if (panel) {
         router.replace('/dashboard')
@@ -18,7 +20,7 @@ export default function RootPage() {
       router.replace('/auth/login')
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, user, panel])
+  }, [hasHydrated, token, user, panel])
 
   return (
     <div className="min-h-screen bg-[var(--surface-2)] flex items-center justify-center">
