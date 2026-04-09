@@ -14,7 +14,7 @@ const BRAND = {
 
 export default function LoginPage() {
   const router = useRouter()
-  const { setAuth } = useAuthStore()
+  const { setAuth, user, token, panel, hasHydrated } = useAuthStore()
 
   const [form, setForm] = useState({ username: '', password: '' })
   const [loading, setLoading] = useState(false)
@@ -36,6 +36,13 @@ export default function LoginPage() {
     requestAnimationFrame(() => usernameRef.current?.focus())
     return () => { h.style.cssText = ''; b.style.cssText = '' }
   }, [])
+
+  useEffect(() => {
+    if (!hasHydrated) return
+    if (user && token) {
+      router.replace(panel ? '/dashboard' : '/panel-selection')
+    }
+  }, [hasHydrated, user, token, panel, router])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

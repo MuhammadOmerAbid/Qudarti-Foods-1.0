@@ -6,17 +6,20 @@ import { useAuthStore } from '@/store/authStore'
 import AppSidebar from '@/components/layout/Sidebar'
 
 export default function DashboardLayout({ children }) {
-  const { user, panel } = useAuthStore()
+  const { user, token, panel, hasHydrated } = useAuthStore()
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
 
   useEffect(() => {
-    if (!user) {
-      router.push('/auth/login')
+    if (!hasHydrated) return
+
+    if (!user || !token) {
+      router.replace('/auth/login')
     } else if (!panel) {
-      router.push('/panel-selection')
+      router.replace('/panel-selection')
     }
-  }, [user, panel, router])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasHydrated, user, token, panel])
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -34,7 +37,7 @@ export default function DashboardLayout({ children }) {
     return () => mq.removeEventListener('change', apply)
   }, [])
 
-  if (!user || !panel) return null
+  if (!hasHydrated || !user || !token || !panel) return null
 
   return (
     <div style={styles.layout}>

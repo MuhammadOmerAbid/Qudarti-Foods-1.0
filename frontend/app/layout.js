@@ -1,9 +1,9 @@
 import '@/styles/global.css'
 
 export const metadata = {
-  title: 'QUDARTI — Industrial OS',
+  title: 'Qudrati Foods',
   description: 'Qudarti Foods Industrial Management System',
-  icons: { icon: '/favicon.ico' },
+  icons: { icon: '/qudartinew.png' },
 }
 
 export default function RootLayout({ children }) {

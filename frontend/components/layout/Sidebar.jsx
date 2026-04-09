@@ -22,10 +22,9 @@ import {
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
   { id: 'gate-inward', label: 'Gate Inward', icon: ArrowDownToLine, path: '/gate-inward' },
-  { id: 'goods-requisition', label: 'Goods Requisition', icon: ClipboardList, path: '/goods-requisition' },
+  { id: 'goods-requisition', label: 'Goods Requisition', icon: ClipboardList, path: '/requisition' },
   { id: 'daily-production', label: 'Daily Production', icon: Factory, path: '/daily-production' },
   { id: 'finished-goods', label: 'Finished Goods', icon: Package, path: '/finished-goods' },
-  { id: 'gate-outward', label: 'Gate Outward', icon: ArrowUpFromLine, path: '/gate-outward' },
   { id: 'production-order', label: 'Production Order', icon: BoxIcon, path: '/production-order' },
   { id: 'inventory', label: 'Inventory', icon: Warehouse, path: '/inventory' },
 ]
