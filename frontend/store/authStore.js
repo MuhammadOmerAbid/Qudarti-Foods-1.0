@@ -9,11 +9,14 @@ export const useAuthStore = create(
       token: null,
       refreshToken: null,
       panel: null,
+      hasHydrated: false,
 
       setAuth: (user, token, refreshToken) =>
         set({ user, token, refreshToken }),
 
       setPanel: (panel) => set({ panel }),
+
+      setHasHydrated: (value) => set({ hasHydrated: value }),
 
       logout: () => {
         set({ user: null, token: null, refreshToken: null, panel: null })
@@ -37,6 +40,17 @@ export const useAuthStore = create(
         return u?.role === 'superuser' || u?.can_delete === true
       },
     }),
-    { name: 'qud-auth' }
+    {
+      name: 'qud-auth',
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        refreshToken: state.refreshToken,
+        panel: state.panel,
+      }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true)
+      },
+    }
   )
 )

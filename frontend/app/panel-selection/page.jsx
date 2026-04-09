@@ -39,7 +39,7 @@ const EyeOffIcon = () => (
 
 export default function PanelSelectPage() {
   const router = useRouter()
-  const { user, setPanel } = useAuthStore()
+  const { user, token, panel, setPanel, hasHydrated } = useAuthStore()
   const [selected, setSelected] = useState('store')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
@@ -47,11 +47,15 @@ export default function PanelSelectPage() {
   const passwordRef = useRef(null)
 
   useEffect(() => {
-    if (!user) {
+    if (!hasHydrated) return
+
+    if (!user || !token) {
       router.replace('/auth/login')
+    } else if (panel) {
+      router.replace('/dashboard')
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user])
+  }, [hasHydrated, user, token, panel])
 
   useEffect(() => {
     const handler = (e) => {
@@ -87,7 +91,7 @@ export default function PanelSelectPage() {
     }
   }
 
-  if (!user) return null
+  if (!hasHydrated || !user || !token) return null
 
   const panels = [
     { id: 'account', label: 'Account Panel', icon: MonitorIcon },

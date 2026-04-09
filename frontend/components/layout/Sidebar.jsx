@@ -24,7 +24,7 @@ const NAV_ITEMS = [
   { id: 'gate-inward', label: 'Gate Inward', icon: ArrowDownToLine, path: '/gate-inward' },
   { id: 'goods-requisition', label: 'Goods Requisition', icon: ClipboardList, path: '/requisition' },
   { id: 'daily-production', label: 'Daily Production', icon: Factory, path: '/daily-production' },
-  { id: 'finished-goods', label: 'Finished Goods', icon: Package, path: '/panel-selection' },
+  { id: 'finished-goods', label: 'Finished Goods', icon: Package, path: '/finished-goods' },
   { id: 'production-order', label: 'Production Order', icon: BoxIcon, path: '/production-order' },
   { id: 'inventory', label: 'Inventory', icon: Warehouse, path: '/inventory' },
 ]
