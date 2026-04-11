@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/authStore'
 import { customersApi } from '@/lib/api/endpoints'
 import {
   SettingsPageShell, SettingsTable, Toggle,
-  ActionButtons, ConfirmDelete, Toast,
+  ActionButtons, ConfirmDelete, Toast, settingsTheme,
 } from '@/components/settings/SettingsShared'
 import { X } from 'lucide-react'
 
@@ -21,8 +21,8 @@ function CustomerModal({ open, onClose, onSave, initial }) {
     <div style={overlay}>
       <div style={modal}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>{initial?.id ? 'Edit Customer' : 'Add Customer'}</h3>
-          <button onClick={onClose} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><X size={18} color="#6b7280" /></button>
+          <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: settingsTheme.text }}>{initial?.id ? 'Edit Customer' : 'Add Customer'}</h3>
+          <button onClick={onClose} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><X size={18} color={settingsTheme.textMuted} /></button>
         </div>
         {[
           { label: 'Customer Name', key: 'name', placeholder: 'Enter name' },
@@ -96,11 +96,11 @@ export default function CustomersPage() {
     return true
   })
 
-  const td = { padding: '12px 20px', textAlign: 'center', fontSize: 14, color: '#374151' }
+  const td = { padding: '12px 20px', textAlign: 'center', fontSize: 14, color: '#425343' }
 
   const rows = filtered.map((item) => (
-    <tr key={item.id} style={{ borderBottom: '1px solid #f0f9f0' }}
-      onMouseEnter={(e) => e.currentTarget.style.background = '#fafffe'}
+    <tr key={item.id} style={{ borderBottom: `1px solid ${settingsTheme.borderSoft}` }}
+      onMouseEnter={(e) => e.currentTarget.style.background = '#f3f8f3'}
       onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
     >
       <td style={td}>{item.name}</td>
@@ -126,7 +126,7 @@ export default function CustomersPage() {
         filterValue={filter} onFilterChange={setFilter}
         addLabel="+ Add Customer" canEdit={canEdit}>
         {loading
-          ? <div style={{ padding: 40, textAlign: 'center', color: '#9ca3af' }}>Loading...</div>
+          ? <div style={{ padding: 40, textAlign: 'center', color: settingsTheme.textSubtle }}>Loading...</div>
           : <SettingsTable columns={[
               { key: 'customer', label: 'Customer', align: 'center' },
               { key: 'status', label: 'Status', align: 'center' },
@@ -143,9 +143,9 @@ export default function CustomersPage() {
   )
 }
 
-const overlay = { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }
-const modal = { background: '#fff', borderRadius: 14, padding: 28, width: 400, boxShadow: '0 20px 60px rgba(0,0,0,0.18)' }
-const lbl = { display: 'block', fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 5 }
-const inp = { width: '100%', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 12px', fontSize: 13.5, color: '#111827', outline: 'none', boxSizing: 'border-box' }
-const cancelBtn = { padding: '8px 18px', border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', color: '#374151' }
-const saveBtn = { padding: '8px 18px', border: 'none', borderRadius: 8, background: '#54B45B', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', color: '#fff' }
+const overlay = { position: 'fixed', inset: 0, background: 'rgba(26,46,27,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }
+const modal = { background: '#fff', border: `1px solid ${settingsTheme.border}`, borderRadius: 16, padding: 28, width: 400, boxShadow: '0 20px 40px rgba(0,0,0,0.12)' }
+const lbl = { display: 'block', fontSize: 12.5, fontWeight: 600, color: '#425343', marginBottom: 5 }
+const inp = { width: '100%', border: `1px solid ${settingsTheme.border}`, borderRadius: 10, padding: '8px 12px', fontSize: 13.5, color: settingsTheme.text, outline: 'none', boxSizing: 'border-box' }
+const cancelBtn = { padding: '8px 18px', border: `1px solid ${settingsTheme.border}`, borderRadius: 10, background: '#fff', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', color: '#425343' }
+const saveBtn = { padding: '8px 18px', border: 'none', borderRadius: 10, background: settingsTheme.primarySoft, fontSize: 13.5, fontWeight: 700, cursor: 'pointer', color: '#fff' }

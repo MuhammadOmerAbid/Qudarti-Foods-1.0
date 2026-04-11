@@ -76,6 +76,11 @@ const shouldRetryWithNewBase = (err) => {
   return !err?.response || [404, 502, 503, 504].includes(status)
 }
 
+const isAuthPath = (url = '') => {
+  const normalized = String(url || '')
+  return normalized.includes('/auth/login/') || normalized.includes('/auth/token/refresh/')
+}
+
 export const api = axios.create({
   baseURL: explicitBase || '',
   headers: { 'Content-Type': 'application/json' },
@@ -134,6 +139,7 @@ api.interceptors.response.use(
   (res) => res,
   async (err) => {
     const orig = err.config || {}
+    const requestUrl = String(orig?.url || '')
 
     if (!orig._baseRetry && shouldRetryWithNewBase(err)) {
       orig._baseRetry = true
@@ -144,12 +150,23 @@ api.interceptors.response.use(
       }
     }
 
+    if (isAuthPath(requestUrl)) {
+      const msg = err.response?.data?.detail
+        || Object.values(err.response?.data || {}).flat().join(', ')
+        || err.message
+        || 'Request failed'
+      return Promise.reject(new Error(msg))
+    }
+
     if (err.response?.status === 401 && !orig._retry) {
       orig._retry = true
       try {
         const raw = localStorage.getItem('qud-auth')
         if (!raw) throw new Error('no session')
         const { state } = JSON.parse(raw)
+        if (!state?.refreshToken || typeof state.refreshToken !== 'string') {
+          throw new Error('no refresh token')
+        }
         let base = await resolveApiBase()
         if (!base) throw new Error('no api base')
         let refreshResponse
@@ -164,6 +181,7 @@ api.interceptors.response.use(
         }
         const parsed = JSON.parse(raw)
         parsed.state.token = refreshResponse.data.access
+        if (refreshResponse.data.refresh) parsed.state.refreshToken = refreshResponse.data.refresh
         localStorage.setItem('qud-auth', JSON.stringify(parsed))
         orig.baseURL = base
         orig.headers = orig.headers || {}

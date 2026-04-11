@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { useAuthStore } from '@/store/authStore'
-import { Tag, Grid3X3, Package, Users, BookOpen, ChevronRight, Shield } from 'lucide-react'
+import { settingsTheme } from '@/components/settings/SettingsShared'
+import { Tag, Grid3X3, Package, Users, BookOpen, Calculator, ChevronRight, Shield } from 'lucide-react'
 
 const SETTING_CARDS = [
   {
@@ -12,8 +13,8 @@ const SETTING_CARDS = [
     description: 'Manage product brands and labels',
     icon: Tag,
     path: '/settings/brands',
-    color: '#54B45B',
-    bg: '#f0fdf4',
+    color: '#2d7a33',
+    bg: '#eaf4ea',
   },
   {
     id: 'categories',
@@ -21,8 +22,8 @@ const SETTING_CARDS = [
     description: 'Organize products by categories',
     icon: Grid3X3,
     path: '/settings/categories',
-    color: '#3b82f6',
-    bg: '#eff6ff',
+    color: '#2d7a33',
+    bg: '#eaf4ea',
   },
   {
     id: 'products',
@@ -30,8 +31,8 @@ const SETTING_CARDS = [
     description: 'Add and manage products',
     icon: Package,
     path: '/settings/products',
-    color: '#f59e0b',
-    bg: '#fffbeb',
+    color: '#2d7a33',
+    bg: '#eaf4ea',
   },
   {
     id: 'customers',
@@ -39,8 +40,8 @@ const SETTING_CARDS = [
     description: 'Manage customer accounts',
     icon: Users,
     path: '/settings/customers',
-    color: '#8b5cf6',
-    bg: '#f5f3ff',
+    color: '#2d7a33',
+    bg: '#eaf4ea',
   },
   {
     id: 'recipe',
@@ -48,8 +49,17 @@ const SETTING_CARDS = [
     description: 'Define product recipes and ingredients',
     icon: BookOpen,
     path: '/settings/recipe',
-    color: '#ec4899',
-    bg: '#fdf2f8',
+    color: '#2d7a33',
+    bg: '#eaf4ea',
+  },
+  {
+    id: 'cbm-calculator',
+    label: 'CBM Calculator',
+    description: 'Plan container loading with CBM and weight',
+    icon: Calculator,
+    path: '/settings/cbm-calculator',
+    color: '#2d7a33',
+    bg: '#eaf4ea',
   },
   {
     id: 'users',
@@ -57,8 +67,8 @@ const SETTING_CARDS = [
     description: 'Manage team access and roles',
     icon: Shield,
     path: '/settings/users',
-    color: '#ef4444',
-    bg: '#fef2f2',
+    color: '#2d7a33',
+    bg: '#eaf4ea',
   },
 ]
 
@@ -71,7 +81,7 @@ export default function SettingsPage() {
     return (
       <DashboardLayout>
         <div style={styles.denied}>
-          <Shield size={48} color="#d1d5db" />
+          <Shield size={48} color={settingsTheme.textSubtle} />
           <h2 style={styles.deniedTitle}>Access Restricted</h2>
           <p style={styles.deniedText}>Only super users can access Settings.</p>
         </div>
@@ -99,11 +109,13 @@ export default function SettingsPage() {
                 style={styles.card}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)'
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'
+                  e.currentTarget.style.borderColor = '#d0dbd0'
+                  e.currentTarget.style.boxShadow = '0 10px 24px rgba(26,46,27,0.08)'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'
+                  e.currentTarget.style.borderColor = settingsTheme.border
+                  e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)'
                 }}
               >
                 <div style={{ ...styles.iconBox, background: card.bg }}>
@@ -113,7 +125,7 @@ export default function SettingsPage() {
                   <span style={styles.cardTitle}>{card.label}</span>
                   <span style={styles.cardDesc}>{card.description}</span>
                 </div>
-                <ChevronRight size={16} color="#9ca3af" />
+                <ChevronRight size={16} color={settingsTheme.textSubtle} />
               </button>
             )
           })}
@@ -124,18 +136,26 @@ export default function SettingsPage() {
 }
 
 const styles = {
-  page: { maxWidth: 900, margin: '0 auto' },
+  page: {
+    maxWidth: 980,
+    margin: '0 auto',
+    background: settingsTheme.pageTint,
+    border: `1px solid ${settingsTheme.border}`,
+    borderRadius: 20,
+    padding: 22,
+    boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
+  },
   header: {
-    marginBottom: 28,
+    marginBottom: 22,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  title: { margin: 0, fontSize: 22, fontWeight: 800, color: '#111827' },
-  subtitle: { margin: '4px 0 0', fontSize: 13.5, color: '#6b7280' },
+  title: { margin: 0, fontSize: 22, fontWeight: 800, color: settingsTheme.text },
+  subtitle: { margin: '4px 0 0', fontSize: 13.5, color: settingsTheme.textMuted },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
     gap: 14,
   },
   card: {
@@ -144,12 +164,12 @@ const styles = {
     gap: 16,
     padding: '18px 20px',
     background: '#fff',
-    border: '1px solid #e8f5e9',
-    borderRadius: 12,
+    border: `1px solid ${settingsTheme.border}`,
+    borderRadius: 14,
     cursor: 'pointer',
     transition: 'all 0.18s ease',
     textAlign: 'left',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
   },
   iconBox: {
     width: 46,
@@ -161,8 +181,8 @@ const styles = {
     flexShrink: 0,
   },
   cardBody: { flex: 1, display: 'flex', flexDirection: 'column', gap: 2 },
-  cardTitle: { fontSize: 14.5, fontWeight: 700, color: '#111827' },
-  cardDesc: { fontSize: 12.5, color: '#6b7280' },
+  cardTitle: { fontSize: 14.5, fontWeight: 700, color: settingsTheme.text },
+  cardDesc: { fontSize: 12.5, color: settingsTheme.textMuted },
   denied: {
     display: 'flex',
     flexDirection: 'column',
@@ -172,6 +192,6 @@ const styles = {
     gap: 12,
     textAlign: 'center',
   },
-  deniedTitle: { margin: 0, fontSize: 20, fontWeight: 700, color: '#374151' },
-  deniedText: { margin: 0, fontSize: 14, color: '#6b7280' },
+  deniedTitle: { margin: 0, fontSize: 20, fontWeight: 700, color: settingsTheme.text },
+  deniedText: { margin: 0, fontSize: 14, color: settingsTheme.textMuted },
 }

@@ -3,14 +3,11 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
-import { useAuthStore } from '@/store/authStore'
 import {
   ClipboardList, Plus, RotateCcw, Eye, Trash2,
   Search, X, ChevronDown, ChevronUp, CheckSquare,
   Square, CornerUpLeft, FileSpreadsheet, Download, FileText
 } from 'lucide-react'
-
-/* ─── Mock Data ─── */
 const PRODUCTS = [
   { id: 1, name: '69 mm Seal',      category: 'Seal',    subCategory: '69mm',     unit: 'Unit' },
   { id: 2, name: '72 MM Seal',      category: 'Seal',    subCategory: '72mm',     unit: 'Unit' },
@@ -56,7 +53,6 @@ const INITIAL_RECORDS = [
 
 export default function RequisitionPage() {
   const router = useRouter()
-  const { user } = useAuthStore()
 
   const [records, setRecords]             = useState(INITIAL_RECORDS)
   const [search, setSearch]               = useState('')
@@ -65,8 +61,6 @@ export default function RequisitionPage() {
   const [returnModal, setReturnModal]     = useState(null)   // { record, itemIdx }
   const [viewRecord, setViewRecord]       = useState(null)
   const [showReport, setShowReport]       = useState(false)
-
-  /* ── Keyword Filtering ── */
   const filtered = useMemo(() => {
     if (!search) return records
     const q = search.toLowerCase()
@@ -77,12 +71,8 @@ export default function RequisitionPage() {
       ].join(' ').toLowerCase().includes(q)
     )
   }, [records, search])
-
-  /* ── Selection ── */
   const toggleSelect = (id) => setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id])
   const toggleAll    = () => setSelected(s => s.length === filtered.length ? [] : filtered.map(r => r.id))
-
-  /* ── Delete ── */
   const handleDelete = (id) => {
     if (window.confirm('Delete this record?')) setRecords(r => r.filter(x => x.id !== id))
   }
@@ -93,8 +83,6 @@ export default function RequisitionPage() {
       setSelected([])
     }
   }
-
-  /* ── Return — adds back to stock (subtracts from net) ── */
   const handleReturn = (recordId, itemIdx, returnQty) => {
     setRecords(prev => prev.map(r => {
       if (r.id !== recordId) return r
@@ -107,8 +95,6 @@ export default function RequisitionPage() {
     }))
     setReturnModal(null)
   }
-
-  /* ── Export ── */
   const exportRows = selected.length > 0 ? records.filter(r => selected.includes(r.id)) : filtered
 
   const exportCSV = (rows) => {
@@ -146,11 +132,8 @@ export default function RequisitionPage() {
         {/* Page Header */}
         <div style={s.pageHeader}>
           <div>
-            <h1 style={s.pageTitle}>
-              <ClipboardList size={20} color="#3b82f6" style={{ marginRight: 8 }} />
-              Goods Requisition
-            </h1>
-            <p style={s.pageSubtitle}>Add New Entry</p>
+            <h1 style={s.pageTitle}>Goods Requisition</h1>
+            <p style={s.pageSubtitle}>View and manage requisition entries.</p>
           </div>
           <div style={s.headerActions}>
             <button style={s.iconBtn} title="Reset" onClick={() => { setSearch(''); setSelected([]) }}>
@@ -170,7 +153,7 @@ export default function RequisitionPage() {
           <div style={s.reportPanel}>
             <div style={s.reportRow}>
               <span style={s.reportLabel}>
-                <FileText size={14} color="#3b82f6" />
+                <FileText size={14} color="#2d7a33" />
                 Export {selected.length > 0 ? `${selected.length} selected` : `all ${filtered.length} filtered`} records:
               </span>
               <div style={s.reportBtns}>
@@ -186,7 +169,7 @@ export default function RequisitionPage() {
 
         {/* Keyword Search */}
         <div style={s.searchWrap}>
-          <Search size={15} color="#9ca3af" />
+          <Search size={15} color="#7a8a7a" />
           <input
             style={s.searchInput}
             placeholder="Search by receiver / entry by / date / product / sub-category / category / comment..."
@@ -204,7 +187,7 @@ export default function RequisitionPage() {
                 <th style={{ ...s.th, width: 40 }}>
                   <button style={s.checkBtn} onClick={toggleAll}>
                     {selected.length === filtered.length && filtered.length > 0
-                      ? <CheckSquare size={15} color="#3b82f6" />
+                      ? <CheckSquare size={15} color="#54B45B" />
                       : <Square size={15} color="#9ca3af" />}
                   </button>
                 </th>
@@ -233,30 +216,30 @@ export default function RequisitionPage() {
               ) : filtered.map(r => (
                 r.items.map((item, idx) => (
                   <tr key={`${r.id}-${idx}`}
-                    style={{ ...s.tr, backgroundColor: selected.includes(r.id) ? '#eff6ff' : '#fff' }}
-                    onMouseEnter={e => { if (!selected.includes(r.id)) e.currentTarget.style.backgroundColor = '#fafafa' }}
-                    onMouseLeave={e => { e.currentTarget.style.backgroundColor = selected.includes(r.id) ? '#eff6ff' : '#fff' }}
+                    style={{ ...s.tr, backgroundColor: selected.includes(r.id) ? '#e8f0e8' : '#fff' }}
+                    onMouseEnter={e => { if (!selected.includes(r.id)) e.currentTarget.style.backgroundColor = '#f7faf7' }}
+                    onMouseLeave={e => { e.currentTarget.style.backgroundColor = selected.includes(r.id) ? '#e8f0e8' : '#fff' }}
                   >
-                    {/* Checkbox — first row only */}
+                    {/* Checkbox - first row only */}
                     <td style={s.td}>
                       {idx === 0 && (
                         <button style={s.checkBtn} onClick={() => toggleSelect(r.id)}>
                           {selected.includes(r.id)
-                            ? <CheckSquare size={15} color="#3b82f6" />
+                            ? <CheckSquare size={15} color="#54B45B" />
                             : <Square size={15} color="#9ca3af" />}
                         </button>
                       )}
                     </td>
 
-                    {/* Receiver Name — first row only */}
+                    {/* Receiver Name - first row only */}
                     <td style={{ ...s.td, fontWeight: idx === 0 ? 600 : 400, color: '#1a2e1b' }}>
                       {idx === 0 ? r.receiverName : ''}
                     </td>
 
-                    {/* Entry By — first row only */}
+                    {/* Entry By - first row only */}
                     <td style={s.td}>{idx === 0 ? r.entryBy : ''}</td>
 
-                    {/* Date — first row only */}
+                    {/* Date - first row only */}
                     <td style={s.td}>{idx === 0 ? r.entryDate : ''}</td>
 
                     {/* Product */}
@@ -273,14 +256,14 @@ export default function RequisitionPage() {
                     <td style={s.td}>
                       <div style={s.qtyGroup}>
                         <span style={s.qtyIssued} title="Issued">{item.quantity} {item.unit}</span>
-                        <span style={s.qtySep}>›</span>
+                        <span style={s.qtySep}>&gt;</span>
                         <span style={s.qtyReturned} title="Returned">-{item.returned} {item.unit}</span>
-                        <span style={s.qtySep}>›</span>
+                        <span style={s.qtySep}>&gt;</span>
                         <span style={s.qtyNet} title="Net (in use)">{item.quantity - item.returned} {item.unit}</span>
                       </div>
                     </td>
 
-                    {/* Comment — first row only, with expand dropdown arrow */}
+                    {/* Comment - first row only, with expand dropdown arrow */}
                     <td style={s.td}>
                       {idx === 0 ? (
                         r.comment ? (
@@ -288,7 +271,7 @@ export default function RequisitionPage() {
                             <span style={s.commentText}>
                               {expandedComment === r.id
                                 ? r.comment
-                                : r.comment.length > 45 ? r.comment.slice(0, 45) + '…' : r.comment}
+                                : r.comment.length > 45 ? r.comment.slice(0, 45) + '...' : r.comment}
                             </span>
                             {r.comment.length > 45 && (
                               <button
@@ -303,7 +286,7 @@ export default function RequisitionPage() {
                             )}
                           </div>
                         ) : (
-                          <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
+                          <span style={{ color: '#d1d5db', fontSize: 12 }}>-</span>
                         )
                       ) : ''}
                     </td>
@@ -344,13 +327,12 @@ export default function RequisitionPage() {
               ))}
             </tbody>
           </table>
-        </div>
-
-        <div style={s.tableFooter}>
-          <span style={s.footerText}>
-            Showing {filtered.length} of {records.length} entries
-            {selected.length > 0 && <span style={s.selCount}> · {selected.length} selected</span>}
-          </span>
+          <div style={s.tableFooter}>
+            <span style={s.footerText}>
+              Showing {filtered.length} of {records.length} entries
+              {selected.length > 0 && <span style={s.selCount}> - {selected.length} selected</span>}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -369,16 +351,14 @@ export default function RequisitionPage() {
     </DashboardLayout>
   )
 }
-
-/* ─── View Modal ─── */
 function ViewModal({ record, onClose }) {
   return (
     <div style={s.modalOverlay} onClick={onClose}>
       <div style={s.modal} onClick={e => e.stopPropagation()}>
         <div style={s.modalHeader}>
           <div>
-            <h2 style={s.modalTitle}>Requisition — {record.receiverName}</h2>
-            <p style={s.modalSub}>{record.entryDate} · {record.entryBy}</p>
+            <h2 style={s.modalTitle}>Requisition - {record.receiverName}</h2>
+            <p style={s.modalSub}>{record.entryDate} - {record.entryBy}</p>
           </div>
           <button style={s.modalClose} onClick={onClose}><X size={18} /></button>
         </div>
@@ -416,8 +396,6 @@ function ViewModal({ record, onClose }) {
     </div>
   )
 }
-
-/* ─── Return Modal ─── */
 function ReturnModal({ record, itemIdx, onClose, onReturn }) {
   const item = record.items[itemIdx]
   const maxReturn = item.quantity - item.returned
@@ -437,7 +415,7 @@ function ReturnModal({ record, itemIdx, onClose, onReturn }) {
         <div style={s.modalHeader}>
           <div>
             <h2 style={s.modalTitle}>Return Goods</h2>
-            <p style={s.modalSub}>{record.receiverName} · {item.productName}</p>
+            <p style={s.modalSub}>{record.receiverName} - {item.productName}</p>
           </div>
           <button style={s.modalClose} onClick={onClose}><X size={18} /></button>
         </div>
@@ -473,88 +451,175 @@ function ReturnModal({ record, itemIdx, onClose, onReturn }) {
   )
 }
 
+const RADIUS = 20
+
 const s = {
-  wrapper: { maxWidth: 1280, margin: '0 auto' },
-  pageHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-  pageTitle: { fontSize: 22, fontWeight: 800, color: '#1a2e1b', margin: '0 0 4px', display: 'flex', alignItems: 'center' },
-  pageSubtitle: { fontSize: 13, color: '#9ca3af', margin: 0 },
-  headerActions: { display: 'flex', alignItems: 'center', gap: 10 },
-  iconBtn: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 10px', cursor: 'pointer', color: '#6b7280', display: 'flex', alignItems: 'center' },
-  reportBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 16px', fontSize: 13.5, fontWeight: 600, color: '#374151', cursor: 'pointer' },
-  addBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#54B45B', border: 'none', borderRadius: 8, padding: '8px 18px', fontSize: 13.5, fontWeight: 600, color: '#fff', cursor: 'pointer' },
-
-  reportPanel: { background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 18px', marginBottom: 16 },
+  wrapper: { width: '100%' },
+  pageHeader: {
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  pageTitle: { fontSize: 30, fontWeight: 800, color: '#1a3d1f', letterSpacing: '-0.6px', margin: '0 0 4px', display: 'flex', alignItems: 'center' },
+  pageSubtitle: { fontSize: 13.5, color: '#7a8a7a', margin: 0 },
+  headerActions: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
+  iconBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: '40px',
+    border: '1.5px solid #d4dfd4',
+    backgroundColor: '#ffffff',
+    color: '#2d7a33',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reportBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '11px 18px',
+    borderRadius: '40px',
+    border: '1.5px solid #d4dfd4',
+    backgroundColor: '#ffffff',
+    color: '#2d7a33',
+    fontSize: 13.5,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  addBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '11px 20px',
+    borderRadius: '40px',
+    border: 'none',
+    backgroundColor: '#1a3d1f',
+    color: '#fff',
+    fontSize: 13.5,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  reportPanel: {
+    background: '#f2f4f2',
+    border: '1px solid #e2e8e2',
+    borderRadius: RADIUS,
+    padding: '14px 18px',
+    marginBottom: 14,
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+  },
   reportRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 },
-  reportLabel: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500, color: '#1a2e1b' },
-  reportBtns: { display: 'flex', gap: 8 },
-  csvBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #93c5fd', borderRadius: 7, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: '#2563eb', cursor: 'pointer' },
-  pdfBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#2563eb', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer' },
-  deleteSelBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #fca5a5', borderRadius: 7, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: '#ef4444', cursor: 'pointer' },
-
-  searchWrap: { display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '9px 14px', marginBottom: 16 },
-  searchInput: { flex: 1, border: 'none', outline: 'none', fontSize: 13.5, color: '#374151', background: 'transparent' },
-  clearBtn: { background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', display: 'flex', padding: 0 },
-
-  tableWrap: { background: '#fff', borderRadius: 12, border: '1px solid #e8f5e9', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
-  table: { width: '100%', borderCollapse: 'collapse' },
-  thead: { background: '#f9fafb' },
-  th: { padding: '11px 14px', fontSize: 12.5, fontWeight: 700, color: '#374151', textAlign: 'left', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap' },
+  reportLabel: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: '#1a3d1f' },
+  reportBtns: { display: 'flex', gap: 8, flexWrap: 'wrap' },
+  csvBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    background: '#fff',
+    border: '1px solid #d4dfd4',
+    borderRadius: 40,
+    padding: '8px 14px',
+    fontSize: 12.5,
+    fontWeight: 600,
+    color: '#2d7a33',
+    cursor: 'pointer',
+  },
+  pdfBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    background: '#2d7a33',
+    border: 'none',
+    borderRadius: 40,
+    padding: '8px 14px',
+    fontSize: 12.5,
+    fontWeight: 600,
+    color: '#fff',
+    cursor: 'pointer',
+  },
+  deleteSelBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    background: '#fff',
+    border: '1px solid #fecaca',
+    borderRadius: 40,
+    padding: '8px 14px',
+    fontSize: 12.5,
+    fontWeight: 600,
+    color: '#ef4444',
+    cursor: 'pointer',
+  },
+  searchWrap: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    background: '#ffffff',
+    border: '1px solid #d4dfd4',
+    borderRadius: 40,
+    padding: '10px 14px',
+    marginBottom: 14,
+  },
+  searchInput: { flex: 1, border: 'none', outline: 'none', fontSize: 13.5, color: '#1f2f21', background: 'transparent' },
+  clearBtn: { background: 'none', border: 'none', cursor: 'pointer', color: '#7a8a7a', display: 'flex', padding: 0 },
+  tableWrap: {
+    background: '#f2f4f2',
+    borderRadius: RADIUS,
+    border: '1px solid #e2e8e2',
+    overflowX: 'auto',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+  },
+  table: { width: '100%', minWidth: 1120, borderCollapse: 'collapse' },
+  thead: { background: '#e8eee8' },
+  th: { padding: '12px 14px', fontSize: 12, fontWeight: 700, color: '#29472d', textAlign: 'left', borderBottom: '1px solid #d4dfd4', whiteSpace: 'nowrap', letterSpacing: '0.1px' },
   tr: { transition: 'background 0.15s' },
-  td: { padding: '10px 14px', fontSize: 13, color: '#4b5563', borderBottom: '1px solid #f3f4f6', verticalAlign: 'top' },
-
-  productName: { fontSize: 13, fontWeight: 600, color: '#1a2e1b' },
-  subCatBadge: { display: 'inline-block', background: '#f0f9ff', border: '1px solid #bae6fd', color: '#0284c7', borderRadius: 6, padding: '2px 8px', fontSize: 11.5, fontWeight: 600 },
-
+  td: { padding: '10px 14px', fontSize: 13, color: '#415443', borderBottom: '1px solid #e2e8e2', verticalAlign: 'top', background: '#ffffff' },
+  productName: { fontSize: 13, fontWeight: 600, color: '#1f2f21' },
+  subCatBadge: { display: 'inline-block', background: '#eef2ee', border: '1px solid #d4dfd4', color: '#2d7a33', borderRadius: 40, padding: '2px 9px', fontSize: 11.5, fontWeight: 700 },
   qtyGroup: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' },
   qtyIssued: { fontSize: 12.5, color: '#374151', fontWeight: 500 },
-  qtySep: { fontSize: 11, color: '#d1d5db' },
-  qtyReturned: { fontSize: 12.5, color: '#ef4444', fontWeight: 500 },
+  qtySep: { fontSize: 11, color: '#b2c0b3' },
+  qtyReturned: { fontSize: 12.5, color: '#ef4444', fontWeight: 600 },
   qtyNet: { fontSize: 12.5, color: '#2d7a33', fontWeight: 700 },
-
-  commentCell: { display: 'flex', alignItems: 'flex-start', gap: 4, maxWidth: 200 },
-  commentText: { fontSize: 12.5, color: '#6b7280', lineHeight: 1.4, flex: 1 },
-  commentToggle: { background: '#f3f4f6', border: 'none', borderRadius: 4, padding: '2px 4px', cursor: 'pointer', color: '#9ca3af', display: 'flex', flexShrink: 0, marginTop: 1 },
-
+  commentCell: { display: 'flex', alignItems: 'flex-start', gap: 4, maxWidth: 220 },
+  commentText: { fontSize: 12.5, color: '#607062', lineHeight: 1.4, flex: 1 },
+  commentToggle: { background: '#eef2ee', border: '1px solid #d4dfd4', borderRadius: 6, padding: '2px 4px', cursor: 'pointer', color: '#7a8a7a', display: 'flex', flexShrink: 0, marginTop: 1 },
   actionBtns: { display: 'flex', gap: 6, justifyContent: 'flex-end' },
-  returnBtn: { background: '#fff7ed', border: '1px solid #fed7aa', color: '#ea580c', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', display: 'flex' },
-  viewBtn: { background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#2d7a33', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', display: 'flex' },
-  delBtn: { background: '#fff5f5', border: '1px solid #fecaca', color: '#ef4444', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', display: 'flex' },
+  returnBtn: { background: '#fff7ed', border: '1px solid #fed7aa', color: '#ea580c', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', display: 'flex' },
+  viewBtn: { background: '#e8f0e8', border: '1px solid #d4dfd4', color: '#2d7a33', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', display: 'flex' },
+  delBtn: { background: '#fff5f5', border: '1px solid #fecaca', color: '#ef4444', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', display: 'flex' },
   checkBtn: { background: 'none', border: 'none', cursor: 'pointer', display: 'flex', padding: 0 },
-
-  emptyCell: { textAlign: 'center', padding: '48px 0' },
+  emptyCell: { textAlign: 'center', padding: '56px 0', background: '#ffffff' },
   emptyState: { display: 'flex', flexDirection: 'column', alignItems: 'center' },
-  tableFooter: { padding: '10px 16px', borderTop: '1px solid #f3f4f6', background: '#fafafa' },
-  footerText: { fontSize: 12.5, color: '#9ca3af' },
-  selCount: { color: '#3b82f6', fontWeight: 600 },
-
-  /* Modals */
-  modalOverlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 },
-  modal: { background: '#fff', borderRadius: 14, width: '100%', maxWidth: 620, maxHeight: '88vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.18)' },
-  modalHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px 24px 16px', borderBottom: '1px solid #f3f4f6' },
-  modalTitle: { fontSize: 17, fontWeight: 800, color: '#1a2e1b', margin: 0 },
-  modalSub: { fontSize: 12.5, color: '#9ca3af', margin: '4px 0 0' },
-  modalClose: { background: '#f3f4f6', border: 'none', borderRadius: 8, padding: 6, cursor: 'pointer', color: '#6b7280', display: 'flex' },
+  tableFooter: { padding: '11px 16px', borderTop: '1px solid #d4dfd4', background: '#e8eee8' },
+  footerText: { fontSize: 12.5, color: '#607062', fontWeight: 500 },
+  selCount: { color: '#1f7a2b', fontWeight: 700 },
+  modalOverlay: { position: 'fixed', inset: 0, background: 'rgba(8, 18, 10, 0.42)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 },
+  modal: { background: '#f2f4f2', borderRadius: RADIUS, width: '100%', maxWidth: 620, maxHeight: '88vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid #e2e8e2', boxShadow: '0 24px 64px rgba(0,0,0,0.18)' },
+  modalHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px 24px 16px', borderBottom: '1px solid #d4dfd4' },
+  modalTitle: { fontSize: 18, fontWeight: 800, color: '#1a3d1f', margin: 0 },
+  modalSub: { fontSize: 12.5, color: '#7a8a7a', margin: '4px 0 0' },
+  modalClose: { background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 10, padding: 6, cursor: 'pointer', color: '#607062', display: 'flex' },
   modalBody: { padding: '20px 24px', overflowY: 'auto', flex: 1 },
-
-  commentBox: { background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '12px 16px', marginBottom: 18 },
-  commentBoxLabel: { fontSize: 11, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.6px', margin: '0 0 6px' },
+  commentBox: { background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 10, padding: '12px 16px', marginBottom: 18 },
+  commentBoxLabel: { fontSize: 11, fontWeight: 700, color: '#7a8a7a', textTransform: 'uppercase', letterSpacing: '0.6px', margin: '0 0 6px' },
   commentBoxText: { fontSize: 13.5, color: '#374151', margin: 0, lineHeight: 1.6 },
-
-  itemsTitle: { fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 10 },
+  itemsTitle: { fontSize: 13, fontWeight: 700, color: '#29472d', marginBottom: 10 },
   innerTable: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
-  innerTh: { padding: '8px 10px', background: '#f0fdf4', color: '#2d7a33', fontWeight: 700, fontSize: 11.5, textAlign: 'left', borderBottom: '1px solid #bbf7d0' },
-  innerTd: { padding: '8px 10px', borderBottom: '1px solid #f3f4f6', color: '#4b5563' },
-
-  returnInfo: { background: '#f9fafb', borderRadius: 10, padding: '14px 16px', marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 8 },
+  innerTh: { padding: '8px 10px', background: '#e8eee8', color: '#2d7a33', fontWeight: 700, fontSize: 11.5, textAlign: 'left', borderBottom: '1px solid #d4dfd4' },
+  innerTd: { padding: '8px 10px', borderBottom: '1px solid #d4dfd4', color: '#415443', background: '#ffffff' },
+  returnInfo: { background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 12, padding: '14px 16px', marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 8 },
   returnInfoRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  returnInfoLabel: { fontSize: 12, color: '#9ca3af', fontWeight: 600 },
+  returnInfoLabel: { fontSize: 12, color: '#7a8a7a', fontWeight: 600 },
   returnInfoVal: { fontSize: 13.5, color: '#374151', fontWeight: 500 },
-  returnNote: { fontSize: 12, color: '#6b7280', marginTop: 10, padding: '8px 12px', background: '#f0fdf4', borderRadius: 6, border: '1px solid #bbf7d0', lineHeight: 1.5 },
-
-  label: { display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 4 },
-  input: { width: '100%', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: '9px 12px', fontSize: 13.5, color: '#1a2e1b', outline: 'none', boxSizing: 'border-box' },
+  returnNote: { fontSize: 12, color: '#607062', marginTop: 10, padding: '8px 12px', background: '#ffffff', borderRadius: 8, border: '1px solid #d4dfd4', lineHeight: 1.5 },
+  label: { display: 'block', fontSize: 12, fontWeight: 600, color: '#607062', marginBottom: 4 },
+  input: { width: '100%', background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 10, padding: '9px 12px', fontSize: 13.5, color: '#1f2f21', outline: 'none', boxSizing: 'border-box' },
   errorText: { fontSize: 12, color: '#ef4444', margin: '4px 0 0' },
-  cancelBtn: { background: '#f3f4f6', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13.5, fontWeight: 600, color: '#374151', cursor: 'pointer' },
-  confirmReturnBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#ea580c', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13.5, fontWeight: 600, color: '#fff', cursor: 'pointer' },
+  cancelBtn: { background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 40, padding: '9px 20px', fontSize: 13.5, fontWeight: 600, color: '#374151', cursor: 'pointer' },
+  confirmReturnBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#ea580c', border: 'none', borderRadius: 40, padding: '9px 20px', fontSize: 13.5, fontWeight: 600, color: '#fff', cursor: 'pointer' },
 }
-

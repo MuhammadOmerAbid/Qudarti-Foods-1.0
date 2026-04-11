@@ -6,7 +6,7 @@ import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { useAuthStore } from '@/store/authStore'
 import {
   ArrowDownToLine, Plus, Eye, Trash2, RotateCcw,
-  FileText, Download, Search, Calendar, Filter,
+  FileText, Download, Search, Calendar,
   ChevronDown, Edit2, X, CheckSquare, Square, FileSpreadsheet
 } from 'lucide-react'
 
@@ -111,11 +111,10 @@ export default function GateInwardPage() {
   return (
     <DashboardLayout>
       <div style={s.wrapper}>
-        {/* Header */}
         <div style={s.pageHeader}>
           <div>
-            <h1 style={s.pageTitle}><ArrowDownToLine size={20} color="#54B45B" style={{ marginRight: 8 }} />Gate Inwards</h1>
-            <p style={s.pageSubtitle}>View and manage Gate Inwards</p>
+            <h1 style={s.pageTitle}>Gate Inwards</h1>
+            <p style={s.pageSubtitle}>View and manage inward material movements.</p>
           </div>
           <div style={s.headerActions}>
             <button style={s.iconBtn} title="Reset filters" onClick={resetFilters}><RotateCcw size={16} /></button>
@@ -138,33 +137,32 @@ export default function GateInwardPage() {
           </div>
         )}
 
-        {/* Filters */}
-        <div style={s.filtersRow}>
-          <div style={s.filterGroup}>
-            {[['filterStatus', filterStatus, setFilterStatus, ['All Status', 'Received', 'Pending']], ['filterBrand', filterBrand, setFilterBrand, ['All Brands', ...allBrands]], ['filterCategory', filterCategory, setFilterCategory, ['All Categories', ...allCategories]]].map(([key, val, setter, opts]) => (
-              <div key={key} style={{ position: 'relative' }}>
-                <select style={s.filterSelect} value={val} onChange={e => setter(e.target.value)}>
-                  {opts.map(o => <option key={o}>{o}</option>)}
-                </select>
-                <ChevronDown size={12} style={s.selectChevron} />
-              </div>
-            ))}
+        <div style={s.controlsCard}>
+          <div style={s.filtersRow}>
+            <div style={s.filterGroup}>
+              {[['filterStatus', filterStatus, setFilterStatus, ['All Status', 'Received', 'Pending']], ['filterBrand', filterBrand, setFilterBrand, ['All Brands', ...allBrands]], ['filterCategory', filterCategory, setFilterCategory, ['All Categories', ...allCategories]]].map(([key, val, setter, opts]) => (
+                <div key={key} style={{ position: 'relative' }}>
+                  <select style={s.filterSelect} value={val} onChange={e => setter(e.target.value)}>
+                    {opts.map(o => <option key={o}>{o}</option>)}
+                  </select>
+                  <ChevronDown size={12} style={s.selectChevron} />
+                </div>
+              ))}
+            </div>
+            <div style={s.dateGroup}>
+              <div style={s.dateField}><Calendar size={13} color="#7a8a7a" /><input type="date" style={s.dateInput} value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)} /></div>
+              <span style={{ color: '#7a8a7a', fontSize: 12 }}>to</span>
+              <div style={s.dateField}><Calendar size={13} color="#7a8a7a" /><input type="date" style={s.dateInput} value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} /></div>
+            </div>
           </div>
-          <div style={s.dateGroup}>
-            <div style={s.dateField}><Calendar size={13} color="#9ca3af" /><input type="date" style={s.dateInput} value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)} /></div>
-            <span style={{ color: '#9ca3af', fontSize: 12 }}>to</span>
-            <div style={s.dateField}><Calendar size={13} color="#9ca3af" /><input type="date" style={s.dateInput} value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} /></div>
+
+          <div style={s.searchWrap}>
+            <Search size={15} color="#7a8a7a" />
+            <input style={s.searchInput} placeholder="Search across all fields..." value={search} onChange={e => setSearch(e.target.value)} />
+            {search && <button style={s.clearBtn} onClick={() => setSearch('')}><X size={14} /></button>}
           </div>
         </div>
 
-        {/* Search */}
-        <div style={s.searchWrap}>
-          <Search size={15} color="#9ca3af" />
-          <input style={s.searchInput} placeholder="Search across all fields..." value={search} onChange={e => setSearch(e.target.value)} />
-          {search && <button style={s.clearBtn} onClick={() => setSearch('')}><X size={14} /></button>}
-        </div>
-
-        {/* Table */}
         <div style={s.tableWrap}>
           <table style={s.table}>
             <thead>
@@ -180,9 +178,9 @@ export default function GateInwardPage() {
               {filtered.length === 0 ? (
                 <tr><td colSpan={10} style={s.emptyCell}><div style={s.emptyState}><ArrowDownToLine size={32} color="#d1d5db" /><p style={{ margin: '8px 0 0', color: '#9ca3af', fontSize: 14 }}>No records found</p></div></td></tr>
               ) : filtered.map(r => (
-                <tr key={r.id} style={{ ...s.tr, backgroundColor: selected.includes(r.id) ? '#f0fdf4' : '#fff' }}
-                  onMouseEnter={e => { if (!selected.includes(r.id)) e.currentTarget.style.backgroundColor = '#fafafa' }}
-                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = selected.includes(r.id) ? '#f0fdf4' : '#fff' }}>
+                <tr key={r.id} style={{ ...s.tr, backgroundColor: selected.includes(r.id) ? '#e8f0e8' : '#fff' }}
+                  onMouseEnter={e => { if (!selected.includes(r.id)) e.currentTarget.style.backgroundColor = '#f7faf7' }}
+                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = selected.includes(r.id) ? '#e8f0e8' : '#fff' }}>
                   <td style={s.td}><button style={s.checkBtn} onClick={() => toggleSelect(r.id)}>{selected.includes(r.id) ? <CheckSquare size={15} color="#54B45B" /> : <Square size={15} color="#9ca3af" />}</button></td>
                   <td style={{ ...s.td, fontWeight: 600, color: '#1a2e1b' }}>{r.grNo}</td>
                   <td style={s.td}>{r.supplierName}</td>
@@ -203,9 +201,9 @@ export default function GateInwardPage() {
               ))}
             </tbody>
           </table>
-        </div>
-        <div style={s.tableFooter}>
-          <span style={s.footerText}>Showing {filtered.length} of {records.length} records{selected.length > 0 && <span style={s.selCount}> · {selected.length} selected</span>}</span>
+          <div style={s.tableFooter}>
+            <span style={s.footerText}>Showing {filtered.length} of {records.length} records{selected.length > 0 && <span style={s.selCount}> · {selected.length} selected</span>}</span>
+          </div>
         </div>
       </div>
 
@@ -220,7 +218,7 @@ function ViewModal({ record, onClose }) {
     <div style={s.modalOverlay} onClick={onClose}>
       <div style={s.modal} onClick={e => e.stopPropagation()}>
         <div style={s.modalHeader}>
-          <div><h2 style={s.modalTitle}>Gate Inward — {record.grNo}</h2><p style={s.modalSub}>Record details</p></div>
+          <div><h2 style={s.modalTitle}>Gate Inward - {record.grNo}</h2><p style={s.modalSub}>Record details</p></div>
           <button style={s.modalClose} onClick={onClose}><X size={18} /></button>
         </div>
         <div style={s.modalBody}>
@@ -257,7 +255,7 @@ function EditModal({ record, suppliers, brands, categories, products, units, onC
     <div style={s.modalOverlay} onClick={onClose}>
       <div style={{ ...s.modal, maxWidth: 740 }} onClick={e => e.stopPropagation()}>
         <div style={s.modalHeader}>
-          <div><h2 style={s.modalTitle}>Edit — {record.grNo}</h2><p style={s.modalSub}>Super user edit mode</p></div>
+          <div><h2 style={s.modalTitle}>Edit - {record.grNo}</h2><p style={s.modalSub}>Super user edit mode</p></div>
           <button style={s.modalClose} onClick={onClose}><X size={18} /></button>
         </div>
         <div style={s.modalBody}>
@@ -308,69 +306,182 @@ function EditModal({ record, suppliers, brands, categories, products, units, onC
   )
 }
 
+const RADIUS = 20
+
 const s = {
-  wrapper: { maxWidth: 1280, margin: '0 auto' },
-  pageHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-  pageTitle: { fontSize: 22, fontWeight: 800, color: '#1a2e1b', margin: '0 0 4px', display: 'flex', alignItems: 'center' },
-  pageSubtitle: { fontSize: 13, color: '#9ca3af', margin: 0 },
-  headerActions: { display: 'flex', alignItems: 'center', gap: 10 },
-  iconBtn: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 10px', cursor: 'pointer', color: '#6b7280', display: 'flex', alignItems: 'center' },
-  reportBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 16px', fontSize: 13.5, fontWeight: 600, color: '#374151', cursor: 'pointer' },
-  addBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#54B45B', border: 'none', borderRadius: 8, padding: '8px 18px', fontSize: 13.5, fontWeight: 600, color: '#fff', cursor: 'pointer' },
-  reportPanel: { background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '12px 18px', marginBottom: 16 },
+  wrapper: { width: '100%' },
+  pageHeader: {
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  pageTitle: { fontSize: 30, fontWeight: 800, color: '#1a3d1f', letterSpacing: '-0.6px', margin: '0 0 4px', display: 'flex', alignItems: 'center' },
+  pageSubtitle: { fontSize: 13.5, color: '#7a8a7a', margin: 0 },
+  headerActions: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
+  iconBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: '40px',
+    border: '1.5px solid #d4dfd4',
+    backgroundColor: '#ffffff',
+    color: '#2d7a33',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reportBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '11px 18px',
+    borderRadius: '40px',
+    border: '1.5px solid #d4dfd4',
+    backgroundColor: '#ffffff',
+    color: '#2d7a33',
+    fontSize: 13.5,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  addBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '11px 20px',
+    borderRadius: '40px',
+    border: 'none',
+    backgroundColor: '#1a3d1f',
+    color: '#fff',
+    fontSize: 13.5,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  reportPanel: {
+    background: '#f2f4f2',
+    border: '1px solid #e2e8e2',
+    borderRadius: RADIUS,
+    padding: '14px 18px',
+    marginBottom: 14,
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+  },
   reportRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 },
-  reportLabel: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500, color: '#1a2e1b' },
-  reportBtns: { display: 'flex', gap: 8 },
-  csvBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #86efac', borderRadius: 7, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: '#2d7a33', cursor: 'pointer' },
-  pdfBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#2d7a33', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer' },
-  deleteSelBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #fca5a5', borderRadius: 7, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: '#ef4444', cursor: 'pointer' },
+  reportLabel: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: '#1a3d1f' },
+  reportBtns: { display: 'flex', gap: 8, flexWrap: 'wrap' },
+  csvBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    background: '#fff',
+    border: '1px solid #d4dfd4',
+    borderRadius: 40,
+    padding: '8px 14px',
+    fontSize: 12.5,
+    fontWeight: 600,
+    color: '#2d7a33',
+    cursor: 'pointer',
+  },
+  pdfBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    background: '#2d7a33',
+    border: 'none',
+    borderRadius: 40,
+    padding: '8px 14px',
+    fontSize: 12.5,
+    fontWeight: 600,
+    color: '#fff',
+    cursor: 'pointer',
+  },
+  deleteSelBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    background: '#fff',
+    border: '1px solid #fecaca',
+    borderRadius: 40,
+    padding: '8px 14px',
+    fontSize: 12.5,
+    fontWeight: 600,
+    color: '#ef4444',
+    cursor: 'pointer',
+  },
+  controlsCard: {
+    backgroundColor: '#f2f4f2',
+    borderRadius: RADIUS,
+    padding: '14px 16px',
+    border: '1px solid #e2e8e2',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+    marginBottom: 14,
+  },
   filtersRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 12 },
   filterGroup: { display: 'flex', gap: 8, flexWrap: 'wrap' },
-  filterSelect: { appearance: 'none', WebkitAppearance: 'none', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '7px 30px 7px 12px', fontSize: 13, color: '#374151', cursor: 'pointer', outline: 'none', fontWeight: 500 },
-  selectChevron: { position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#9ca3af' },
-  dateGroup: { display: 'flex', alignItems: 'center', gap: 8 },
-  dateField: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 10px' },
-  dateInput: { border: 'none', outline: 'none', fontSize: 13, color: '#374151', background: 'transparent', width: 120 },
-  searchWrap: { display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '9px 14px', marginBottom: 16 },
-  searchInput: { flex: 1, border: 'none', outline: 'none', fontSize: 13.5, color: '#374151', background: 'transparent' },
-  clearBtn: { background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', display: 'flex', padding: 0 },
-  tableWrap: { background: '#fff', borderRadius: 12, border: '1px solid #e8f5e9', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
-  table: { width: '100%', borderCollapse: 'collapse' },
-  thead: { background: '#f9fafb' },
-  th: { padding: '11px 14px', fontSize: 12.5, fontWeight: 700, color: '#374151', textAlign: 'left', borderBottom: '1px solid #e5e7eb', whiteSpace: 'nowrap' },
+  filterSelect: {
+    appearance: 'none',
+    WebkitAppearance: 'none',
+    background: '#fff',
+    border: '1px solid #d4dfd4',
+    borderRadius: 40,
+    padding: '9px 34px 9px 14px',
+    fontSize: 12.5,
+    color: '#1f2f21',
+    cursor: 'pointer',
+    outline: 'none',
+    fontWeight: 600,
+  },
+  selectChevron: { position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#7a8a7a' },
+  dateGroup: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  dateField: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #d4dfd4', borderRadius: 40, padding: '8px 11px' },
+  dateInput: { border: 'none', outline: 'none', fontSize: 12.5, color: '#1f2f21', background: 'transparent', width: 120 },
+  searchWrap: { display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #d4dfd4', borderRadius: 40, padding: '10px 14px' },
+  searchInput: { flex: 1, border: 'none', outline: 'none', fontSize: 13.5, color: '#1f2f21', background: 'transparent' },
+  clearBtn: { background: 'none', border: 'none', cursor: 'pointer', color: '#7a8a7a', display: 'flex', padding: 0 },
+  tableWrap: {
+    background: '#f2f4f2',
+    borderRadius: RADIUS,
+    border: '1px solid #e2e8e2',
+    overflowX: 'auto',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+  },
+  table: { width: '100%', minWidth: 1060, borderCollapse: 'collapse' },
+  thead: { background: '#e8eee8' },
+  th: { padding: '12px 14px', fontSize: 12, fontWeight: 700, color: '#29472d', textAlign: 'left', borderBottom: '1px solid #d4dfd4', whiteSpace: 'nowrap', letterSpacing: '0.1px' },
   tr: { transition: 'background 0.15s' },
-  td: { padding: '11px 14px', fontSize: 13, color: '#4b5563', borderBottom: '1px solid #f3f4f6' },
-  badge: { display: 'inline-block', padding: '2px 10px', borderRadius: 20, fontSize: 11.5, fontWeight: 600 },
-  badgeGreen: { background: '#dcfce7', color: '#166534' },
-  badgeYellow: { background: '#fef9c3', color: '#854d0e' },
+  td: { padding: '11px 14px', fontSize: 13, color: '#415443', borderBottom: '1px solid #e2e8e2', background: '#ffffff' },
+  badge: { display: 'inline-block', padding: '3px 10px', borderRadius: 40, fontSize: 11.5, fontWeight: 700 },
+  badgeGreen: { background: '#e8f0e8', color: '#1f7a2b', border: '1px solid #d4dfd4' },
+  badgeYellow: { background: '#fefce8', color: '#a16207', border: '1px solid #fef3c7' },
   actionBtns: { display: 'flex', gap: 6, justifyContent: 'flex-end' },
-  editBtn: { background: '#eff6ff', border: '1px solid #bfdbfe', color: '#3b82f6', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', display: 'flex' },
-  viewBtn2: { background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#2d7a33', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', display: 'flex' },
-  delBtn: { background: '#fff5f5', border: '1px solid #fecaca', color: '#ef4444', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', display: 'flex' },
+  editBtn: { background: '#eff6ff', border: '1px solid #bfdbfe', color: '#2563eb', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', display: 'flex' },
+  viewBtn2: { background: '#e8f0e8', border: '1px solid #d4dfd4', color: '#2d7a33', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', display: 'flex' },
+  delBtn: { background: '#fff5f5', border: '1px solid #fecaca', color: '#ef4444', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', display: 'flex' },
   checkBtn: { background: 'none', border: 'none', cursor: 'pointer', display: 'flex', padding: 0 },
-  emptyCell: { textAlign: 'center', padding: '48px 0' },
+  emptyCell: { textAlign: 'center', padding: '56px 0', background: '#ffffff' },
   emptyState: { display: 'flex', flexDirection: 'column', alignItems: 'center' },
-  tableFooter: { padding: '10px 16px', borderTop: '1px solid #f3f4f6', background: '#fafafa' },
-  footerText: { fontSize: 12.5, color: '#9ca3af' },
-  selCount: { color: '#54B45B', fontWeight: 600 },
-  modalOverlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 },
-  modal: { background: '#fff', borderRadius: 14, width: '100%', maxWidth: 600, maxHeight: '88vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.18)' },
-  modalHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px 24px 16px', borderBottom: '1px solid #f3f4f6' },
-  modalTitle: { fontSize: 17, fontWeight: 800, color: '#1a2e1b', margin: 0 },
-  modalSub: { fontSize: 12.5, color: '#9ca3af', margin: '4px 0 0' },
-  modalClose: { background: '#f3f4f6', border: 'none', borderRadius: 8, padding: 6, cursor: 'pointer', color: '#6b7280', display: 'flex' },
+  tableFooter: { padding: '11px 16px', borderTop: '1px solid #d4dfd4', background: '#e8eee8' },
+  footerText: { fontSize: 12.5, color: '#607062', fontWeight: 500 },
+  selCount: { color: '#1f7a2b', fontWeight: 700 },
+  modalOverlay: { position: 'fixed', inset: 0, background: 'rgba(8, 18, 10, 0.42)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 },
+  modal: { background: '#f2f4f2', borderRadius: RADIUS, width: '100%', maxWidth: 620, maxHeight: '88vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', border: '1px solid #e2e8e2', boxShadow: '0 24px 64px rgba(0,0,0,0.18)' },
+  modalHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px 24px 16px', borderBottom: '1px solid #d4dfd4' },
+  modalTitle: { fontSize: 18, fontWeight: 800, color: '#1a3d1f', margin: 0 },
+  modalSub: { fontSize: 12.5, color: '#7a8a7a', margin: '4px 0 0' },
+  modalClose: { background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 10, padding: 6, cursor: 'pointer', color: '#607062', display: 'flex' },
   modalBody: { padding: '20px 24px', overflowY: 'auto', flex: 1 },
   detailGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 20px', marginBottom: 20 },
-  detailLabel: { fontSize: 11, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.6px', margin: '0 0 4px' },
-  detailValue: { fontSize: 14, color: '#1a2e1b', fontWeight: 500, margin: 0, padding: '6px 10px', background: '#f9fafb', borderRadius: 6, border: '1px solid #f3f4f6' },
-  itemsTitle: { fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 10 },
+  detailLabel: { fontSize: 11, fontWeight: 700, color: '#7a8a7a', textTransform: 'uppercase', letterSpacing: '0.6px', margin: '0 0 4px' },
+  detailValue: { fontSize: 13.5, color: '#1f2f21', fontWeight: 600, margin: 0, padding: '7px 10px', background: '#ffffff', borderRadius: 9, border: '1px solid #d4dfd4' },
+  itemsTitle: { fontSize: 13, fontWeight: 700, color: '#29472d', marginBottom: 10 },
   innerTable: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
-  innerTh: { padding: '8px 10px', background: '#f0fdf4', color: '#2d7a33', fontWeight: 700, fontSize: 11.5, textAlign: 'left', borderBottom: '1px solid #bbf7d0' },
-  innerTd: { padding: '8px 10px', borderBottom: '1px solid #f3f4f6', color: '#4b5563' },
-  label: { display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 4 },
-  input: { width: '100%', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 10px', fontSize: 13, color: '#1a2e1b', outline: 'none', boxSizing: 'border-box' },
-  addItemBtn: { display: 'flex', alignItems: 'center', gap: 5, background: '#f0fdf4', border: '1px solid #86efac', color: '#2d7a33', borderRadius: 7, padding: '5px 12px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' },
-  removeItemBtn: { background: '#fff5f5', border: '1px solid #fecaca', color: '#ef4444', borderRadius: 6, padding: '6px 8px', cursor: 'pointer', display: 'flex', alignSelf: 'flex-end' },
-  cancelBtn: { background: '#f3f4f6', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13.5, fontWeight: 600, color: '#374151', cursor: 'pointer' },
-  saveBtn: { background: '#54B45B', border: 'none', borderRadius: 8, padding: '9px 24px', fontSize: 13.5, fontWeight: 600, color: '#fff', cursor: 'pointer' },
+  innerTh: { padding: '8px 10px', background: '#e8eee8', color: '#2d7a33', fontWeight: 700, fontSize: 11.5, textAlign: 'left', borderBottom: '1px solid #d4dfd4' },
+  innerTd: { padding: '8px 10px', borderBottom: '1px solid #d4dfd4', color: '#415443', background: '#ffffff' },
+  label: { display: 'block', fontSize: 12, fontWeight: 600, color: '#607062', marginBottom: 4 },
+  input: { width: '100%', background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 10, padding: '9px 10px', fontSize: 13, color: '#1f2f21', outline: 'none', boxSizing: 'border-box' },
+  addItemBtn: { display: 'flex', alignItems: 'center', gap: 5, background: '#ffffff', border: '1px solid #d4dfd4', color: '#2d7a33', borderRadius: 40, padding: '6px 12px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' },
+  removeItemBtn: { background: '#fff5f5', border: '1px solid #fecaca', color: '#ef4444', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', display: 'flex', alignSelf: 'flex-end' },
+  cancelBtn: { background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 40, padding: '9px 20px', fontSize: 13.5, fontWeight: 600, color: '#374151', cursor: 'pointer' },
+  saveBtn: { background: '#1a3d1f', border: 'none', borderRadius: 40, padding: '9px 24px', fontSize: 13.5, fontWeight: 600, color: '#fff', cursor: 'pointer' },
 }
