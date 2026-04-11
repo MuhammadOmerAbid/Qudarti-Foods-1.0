@@ -40,7 +40,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (!hasHydrated) return
     if (user && token) {
-      router.replace(panel ? '/dashboard' : '/panel-selection')
+      router.replace(panel ? (panel === 'account' ? '/accounts-dashboard' : '/dashboard') : '/panel-selection')
     }
   }, [hasHydrated, user, token, panel, router])
 
