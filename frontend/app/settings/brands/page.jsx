@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/authStore'
 import { brandsApi } from '@/lib/api/endpoints'
 import {
   SettingsPageShell, SettingsTable, Toggle,
-  ActionButtons, InlineInput, ConfirmDelete, Toast,
+  ActionButtons, InlineInput, ConfirmDelete, Toast, settingsTheme,
 } from '@/components/settings/SettingsShared'
 
 export default function BrandsPage() {
@@ -92,7 +92,7 @@ export default function BrandsPage() {
 
   const rows = [
     ...(adding ? [
-      <tr key="new-row" style={{ background: '#f0fdf4' }}>
+      <tr key="new-row" style={{ background: '#edf8ef' }}>
         <td style={tdStyle}>
           <InlineInput
             value={newName}
@@ -107,8 +107,8 @@ export default function BrandsPage() {
       </tr>
     ] : []),
     ...filtered.map((brand) => (
-      <tr key={brand.id} style={{ borderBottom: '1px solid #f0f9f0' }}
-        onMouseEnter={(e) => e.currentTarget.style.background = '#fafffe'}
+      <tr key={brand.id} style={{ borderBottom: `1px solid ${settingsTheme.borderSoft}` }}
+        onMouseEnter={(e) => e.currentTarget.style.background = '#f3f8f3'}
         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
       >
         <td style={{ ...tdStyle, textAlign: 'center' }}>
@@ -121,7 +121,7 @@ export default function BrandsPage() {
               placeholder="Brand name"
             />
           ) : (
-            <span style={{ fontSize: 14, color: '#374151' }}>{brand.name}</span>
+            <span style={{ fontSize: 14, color: '#425343' }}>{brand.name}</span>
           )}
         </td>
         <td style={{ ...tdStyle, textAlign: 'center' }}>
@@ -152,7 +152,7 @@ export default function BrandsPage() {
         canEdit={isSuperuser}
       >
         {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#9ca3af' }}>Loading...</div>
+          <div style={{ padding: 40, textAlign: 'center', color: settingsTheme.textSubtle }}>Loading...</div>
         ) : (
           <SettingsTable columns={columns} rows={rows} emptyMsg="No brands found." />
         )}

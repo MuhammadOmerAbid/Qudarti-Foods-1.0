@@ -96,9 +96,9 @@ export const FINISHED_INITIAL = [
 ]
 
 export const STATUS_COLORS = {
-  Pending: { background: '#fff7ed', color: '#c2410c', borderColor: '#fed7aa' },
-  Completed: { background: '#ecfdf3', color: '#166534', borderColor: '#bbf7d0' },
-  'In Progress': { background: '#eff6ff', color: '#1e40af', borderColor: '#bfdbfe' },
+  Pending: { background: '#fefce8', color: '#a16207', borderColor: '#fef3c7' },
+  Completed: { background: '#e8f0e8', color: '#1f7a2b', borderColor: '#d4dfd4' },
+  'In Progress': { background: '#eef2ee', color: '#2d7a33', borderColor: '#d4dfd4' },
 }
 
 export function formatDate(value) {
@@ -408,7 +408,7 @@ export function ReportModal({ title, data, columns, dateKey, onClose }) {
 
         <div style={ui.reportToolbar}>
           <div style={ui.searchWrapSmall}>
-            <Search size={14} color="#94a3b8" />
+            <Search size={14} color="#7a8a7a" />
             <input
               style={ui.searchInputBare}
               value={search}
@@ -431,7 +431,7 @@ export function ReportModal({ title, data, columns, dateKey, onClose }) {
           </AppButton>
           <AppButton
             onClick={downloadReportPdf}
-            style={{ borderColor: '#bfdbfe', color: '#1d4ed8', background: '#eff6ff' }}
+            style={{ borderColor: '#d4dfd4', color: '#2d7a33', background: '#ffffff' }}
           >
             <FileText size={14} /> Download PDF
           </AppButton>
@@ -497,7 +497,7 @@ export function SectionHeader({ title, subtitle, actions }) {
 
 export const ui = {
   pageWrap: {
-    maxWidth: 1320,
+    width: '100%',
     margin: '0 auto',
     display: 'flex',
     flexDirection: 'column',
@@ -506,23 +506,23 @@ export const ui = {
   sectionHeader: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'flex-end',
     gap: 14,
     flexWrap: 'wrap',
     marginBottom: 4,
   },
   pageTitle: {
     margin: 0,
-    fontSize: 24,
+    fontSize: 30,
     lineHeight: 1.2,
-    letterSpacing: '-0.02em',
+    letterSpacing: '-0.6px',
     fontWeight: 800,
-    color: '#102a16',
+    color: '#1a3d1f',
   },
   pageSub: {
     margin: '6px 0 0 0',
-    fontSize: 13,
-    color: '#64748b',
+    fontSize: 13.5,
+    color: '#7a8a7a',
     fontWeight: 500,
   },
   headerActions: {
@@ -536,10 +536,10 @@ export const ui = {
     flexWrap: 'wrap',
   },
   card: {
-    border: '1px solid #dfe8e2',
-    borderRadius: 14,
-    background: '#ffffff',
-    boxShadow: '0 2px 12px rgba(16, 42, 22, 0.05)',
+    border: '1px solid #e2e8e2',
+    borderRadius: 20,
+    background: '#f2f4f2',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
     overflow: 'hidden',
   },
   tableScroll: {
@@ -550,9 +550,9 @@ export const ui = {
     borderCollapse: 'collapse',
   },
   th: {
-    background: '#f7faf8',
-    borderBottom: '1px solid #e6ece8',
-    color: '#475569',
+    background: '#e8eee8',
+    borderBottom: '1px solid #d4dfd4',
+    color: '#29472d',
     fontSize: 12,
     fontWeight: 700,
     textAlign: 'left',
@@ -560,32 +560,33 @@ export const ui = {
     whiteSpace: 'nowrap',
   },
   td: {
-    borderBottom: '1px solid #eef2ef',
-    color: '#334155',
+    borderBottom: '1px solid #e2e8e2',
+    color: '#415443',
     fontSize: 13,
     padding: '11px 14px',
     verticalAlign: 'middle',
+    background: '#ffffff',
   },
   emptyCell: {
     textAlign: 'center',
-    color: '#94a3b8',
+    color: '#7a8a7a',
     fontSize: 13,
     padding: '38px 14px',
   },
   dateRow: {
-    background: '#f0f7f2',
-    color: '#166534',
+    background: '#e8eee8',
+    color: '#2d7a33',
     fontWeight: 700,
     fontSize: 13,
-    borderBottom: '1px solid #deecdf',
+    borderBottom: '1px solid #d4dfd4',
     padding: '10px 14px',
   },
   searchWrap: {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    border: '1px solid #dce5df',
-    borderRadius: 10,
+    border: '1px solid #d4dfd4',
+    borderRadius: 40,
     padding: '10px 12px',
     background: '#ffffff',
   },
@@ -594,15 +595,15 @@ export const ui = {
     outline: 'none',
     width: '100%',
     fontSize: 13,
-    color: '#334155',
+    color: '#1f2f21',
     background: 'transparent',
   },
   searchWrapSmall: {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
-    border: '1px solid #dce5df',
-    borderRadius: 8,
+    border: '1px solid #d4dfd4',
+    borderRadius: 40,
     padding: '8px 10px',
     minWidth: 240,
     background: '#fff',
@@ -612,15 +613,15 @@ export const ui = {
     outline: 'none',
     fontSize: 13,
     width: '100%',
-    color: '#334155',
+    color: '#1f2f21',
     background: 'transparent',
   },
   select: {
-    border: '1px solid #dce5df',
-    borderRadius: 10,
-    padding: '9px 34px 9px 11px',
-    fontSize: 13,
-    color: '#334155',
+    border: '1px solid #d4dfd4',
+    borderRadius: 40,
+    padding: '9px 34px 9px 14px',
+    fontSize: 12.5,
+    color: '#1f2f21',
     outline: 'none',
     background: '#ffffff',
     minWidth: 170,
@@ -648,32 +649,32 @@ export const ui = {
     width: 15,
     height: 15,
     cursor: 'pointer',
-    accentColor: '#3f9950',
+    accentColor: '#2d7a33',
   },
   btnGhost: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: 6,
-    border: '1px solid #d9e2dc',
-    borderRadius: 9,
+    border: '1.5px solid #d4dfd4',
+    borderRadius: 40,
     background: '#ffffff',
-    color: '#334155',
-    fontSize: 12.5,
+    color: '#2d7a33',
+    fontSize: 13,
     fontWeight: 600,
-    padding: '8px 12px',
+    padding: '10px 14px',
     cursor: 'pointer',
   },
   btnPrimary: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: 6,
-    border: '1px solid #3f9950',
-    borderRadius: 9,
-    background: 'linear-gradient(180deg, #54b45b 0%, #3f9950 100%)',
+    border: 'none',
+    borderRadius: 40,
+    background: '#1a3d1f',
     color: '#ffffff',
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: 700,
-    padding: '8px 13px',
+    padding: '10px 16px',
     cursor: 'pointer',
   },
   btnDanger: {
@@ -681,12 +682,12 @@ export const ui = {
     alignItems: 'center',
     gap: 6,
     border: '1px solid #fecaca',
-    borderRadius: 9,
+    borderRadius: 40,
     background: '#fff1f2',
     color: '#b91c1c',
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: 600,
-    padding: '8px 13px',
+    padding: '10px 16px',
     cursor: 'pointer',
   },
   inlineActionsLeft: {
@@ -701,10 +702,10 @@ export const ui = {
     gap: 6,
   },
   iconButton: {
-    border: '1px solid #dce5df',
-    borderRadius: 7,
+    border: '1px solid #d4dfd4',
+    borderRadius: 8,
     background: '#fff',
-    color: '#64748b',
+    color: '#607062',
     width: 26,
     height: 26,
     display: 'inline-flex',
@@ -715,7 +716,7 @@ export const ui = {
   },
   iconDangerButton: {
     border: '1px solid #fecaca',
-    borderRadius: 7,
+    borderRadius: 8,
     background: '#fff1f2',
     color: '#b91c1c',
     width: 26,
@@ -733,27 +734,27 @@ export const ui = {
     justifyContent: 'center',
   },
   brandPrimary: {
-    color: '#166534',
+    color: '#2d7a33',
     fontWeight: 700,
     padding: '11px 14px',
-    borderBottom: '1px solid #eef2ef',
+    borderBottom: '1px solid #e2e8e2',
     fontSize: 13,
   },
   brandMuted: {
-    color: '#cbd5e1',
+    color: '#b2c0b3',
     fontWeight: 400,
     padding: '11px 14px',
-    borderBottom: '1px solid #eef2ef',
+    borderBottom: '1px solid #e2e8e2',
     fontSize: 13,
   },
   smallMuted: {
-    color: '#64748b',
+    color: '#607062',
     fontSize: 12,
   },
   overlay: {
     position: 'fixed',
     inset: 0,
-    background: 'rgba(15, 23, 42, 0.46)',
+    background: 'rgba(8, 18, 10, 0.42)',
     zIndex: 200,
     display: 'flex',
     alignItems: 'center',
@@ -765,9 +766,10 @@ export const ui = {
     maxWidth: 780,
     maxHeight: '90vh',
     overflowY: 'auto',
-    borderRadius: 16,
-    background: '#ffffff',
-    boxShadow: '0 22px 60px rgba(2, 6, 23, 0.25)',
+    borderRadius: 20,
+    background: '#f2f4f2',
+    border: '1px solid #e2e8e2',
+    boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
     padding: 20,
   },
   modalHeaderTop: {
@@ -779,14 +781,14 @@ export const ui = {
   },
   modalTitle: {
     margin: 0,
-    color: '#102a16',
+    color: '#1a3d1f',
     fontSize: 18,
     fontWeight: 800,
   },
   modalSub: {
     margin: '4px 0 0 0',
     fontSize: 12,
-    color: '#64748b',
+    color: '#7a8a7a',
   },
   modalActionsEnd: {
     marginTop: 16,
@@ -813,35 +815,35 @@ export const ui = {
     display: 'block',
     fontSize: 12,
     fontWeight: 700,
-    color: '#475569',
+    color: '#607062',
     marginBottom: 6,
   },
   input: {
     width: '100%',
-    border: '1px solid #dce5df',
+    border: '1px solid #d4dfd4',
     borderRadius: 10,
     padding: '9px 11px',
     fontSize: 13,
-    color: '#334155',
+    color: '#1f2f21',
     outline: 'none',
     boxSizing: 'border-box',
     background: '#fff',
   },
   inputDate: {
-    border: '1px solid #dce5df',
-    borderRadius: 8,
+    border: '1px solid #d4dfd4',
+    borderRadius: 40,
     padding: '8px 10px',
-    fontSize: 13,
-    color: '#334155',
+    fontSize: 12.5,
+    color: '#1f2f21',
     outline: 'none',
   },
   textarea: {
     width: '100%',
-    border: '1px solid #dce5df',
+    border: '1px solid #d4dfd4',
     borderRadius: 10,
     padding: '9px 11px',
     fontSize: 13,
-    color: '#334155',
+    color: '#1f2f21',
     outline: 'none',
     boxSizing: 'border-box',
     resize: 'vertical',
@@ -850,17 +852,17 @@ export const ui = {
   charCounter: {
     margin: '6px 0 0 0',
     fontSize: 11,
-    color: '#94a3b8',
+    color: '#7a8a7a',
     textAlign: 'right',
   },
   divider: {
     border: 'none',
-    borderTop: '1px solid #ecf0ed',
+    borderTop: '1px solid #d4dfd4',
     margin: '12px 0 14px 0',
   },
   itemRow: {
-    border: '1px solid #e6ece8',
-    background: '#f9fbfa',
+    border: '1px solid #d4dfd4',
+    background: '#ffffff',
     borderRadius: 12,
     padding: 12,
     marginBottom: 10,
@@ -873,16 +875,16 @@ export const ui = {
   },
   itemTitle: {
     fontSize: 12,
-    color: '#475569',
+    color: '#607062',
     fontWeight: 700,
   },
   addLineButton: {
     justifyContent: 'center',
     width: '100%',
     borderStyle: 'dashed',
-    color: '#3f9950',
-    borderColor: '#a9d4b0',
-    background: '#f8fdf9',
+    color: '#2d7a33',
+    borderColor: '#d4dfd4',
+    background: '#ffffff',
   },
   saveBtn: {
     minWidth: 180,
@@ -896,14 +898,14 @@ export const ui = {
     alignItems: 'center',
   },
   reportTableWrap: {
-    border: '1px solid #e6ece8',
-    borderRadius: 10,
+    border: '1px solid #e2e8e2',
+    borderRadius: 20,
     overflow: 'auto',
   },
   metaText: {
     margin: '10px 0 0 0',
     fontSize: 12,
-    color: '#94a3b8',
+    color: '#607062',
   },
   monthGroup: {
     marginBottom: 16,
@@ -911,7 +913,7 @@ export const ui = {
   monthTitle: {
     margin: '0 0 8px 0',
     fontSize: 14,
-    color: '#166534',
+    color: '#2d7a33',
     fontWeight: 700,
   },
 }

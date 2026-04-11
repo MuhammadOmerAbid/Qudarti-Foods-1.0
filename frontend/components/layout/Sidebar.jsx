@@ -81,7 +81,7 @@ export default function AppSidebar({ collapsed, setCollapsed }) {
           )}
         </button>
         {!collapsed && (
-          <span style={s.logoName}>Qudrati</span>
+          <span style={s.logoName}>Qudrati Foods</span>
         )}
       </div>
 

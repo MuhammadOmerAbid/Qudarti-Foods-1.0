@@ -1,9 +1,23 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Plus, RefreshCw, Pencil, Trash2, Search, X, Check } from 'lucide-react'
+import { useEffect } from 'react'
+import { Plus, RefreshCw, Pencil, Trash2, X, Check } from 'lucide-react'
 
-// ─── Toggle Switch ──────────────────────────────────────────
+export const settingsTheme = {
+  primary: '#2d7a33',
+  primarySoft: '#54B45B',
+  primaryTint: '#f0f6f0',
+  pageTint: '#f8faf8',
+  surface: '#ffffff',
+  border: '#e2e8e2',
+  borderSoft: '#edf2ed',
+  text: '#1a2e1b',
+  textMuted: '#6f8170',
+  textSubtle: '#8a9a8a',
+  danger: '#dc2626',
+  dangerBg: '#fff5f5',
+}
+
 export function Toggle({ checked, onChange, disabled }) {
   return (
     <button
@@ -14,11 +28,12 @@ export function Toggle({ checked, onChange, disabled }) {
         width: 42,
         height: 24,
         borderRadius: 999,
-        background: checked ? '#54B45B' : '#d1d5db',
+        background: checked ? settingsTheme.primarySoft : '#cfd9cf',
         border: 'none',
         cursor: disabled ? 'not-allowed' : 'pointer',
         position: 'relative',
         transition: 'background 0.2s',
+        opacity: disabled ? 0.6 : 1,
         flexShrink: 0,
       }}
     >
@@ -32,14 +47,13 @@ export function Toggle({ checked, onChange, disabled }) {
           borderRadius: '50%',
           background: '#fff',
           transition: 'left 0.2s',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.16)',
         }}
       />
     </button>
   )
 }
 
-// ─── Inline Edit Input ──────────────────────────────────────
 export function InlineInput({ value, onChange, onSave, onCancel, placeholder }) {
   return (
     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -53,21 +67,28 @@ export function InlineInput({ value, onChange, onSave, onCancel, placeholder }) 
           if (e.key === 'Escape') onCancel()
         }}
         style={{
-          border: '1.5px solid #54B45B',
-          borderRadius: 7,
-          padding: '5px 10px',
+          border: `1.5px solid ${settingsTheme.primarySoft}`,
+          borderRadius: 10,
+          padding: '6px 10px',
           fontSize: 13.5,
           outline: 'none',
           width: 220,
-          color: '#111827',
+          color: settingsTheme.text,
+          background: '#fff',
         }}
       />
       <button
         onClick={onSave}
         style={{
-          background: '#54B45B', border: 'none', borderRadius: 7,
-          width: 28, height: 28, display: 'flex', alignItems: 'center',
-          justifyContent: 'center', cursor: 'pointer',
+          background: settingsTheme.primarySoft,
+          border: 'none',
+          borderRadius: 9,
+          width: 30,
+          height: 30,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
         }}
       >
         <Check size={14} color="#fff" />
@@ -75,18 +96,23 @@ export function InlineInput({ value, onChange, onSave, onCancel, placeholder }) 
       <button
         onClick={onCancel}
         style={{
-          background: '#f3f4f6', border: 'none', borderRadius: 7,
-          width: 28, height: 28, display: 'flex', alignItems: 'center',
-          justifyContent: 'center', cursor: 'pointer',
+          background: '#f4f6f4',
+          border: `1px solid ${settingsTheme.border}`,
+          borderRadius: 9,
+          width: 30,
+          height: 30,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
         }}
       >
-        <X size={14} color="#6b7280" />
+        <X size={14} color={settingsTheme.textMuted} />
       </button>
     </div>
   )
 }
 
-// ─── Page Shell ─────────────────────────────────────────────
 export function SettingsPageShell({
   title,
   subtitle,
@@ -100,7 +126,6 @@ export function SettingsPageShell({
 }) {
   return (
     <div style={styles.page}>
-      {/* Header */}
       <div style={styles.header}>
         <div>
           <h1 style={styles.title}>{title}</h1>
@@ -108,7 +133,7 @@ export function SettingsPageShell({
         </div>
         <div style={styles.headerActions}>
           <button onClick={onRefresh} style={styles.iconBtn} title="Refresh">
-            <RefreshCw size={16} color="#6b7280" />
+            <RefreshCw size={16} color={settingsTheme.textMuted} />
           </button>
           {canEdit && (
             <button onClick={onAdd} style={styles.addBtn}>
@@ -119,28 +144,23 @@ export function SettingsPageShell({
         </div>
       </div>
 
-      {/* Filter Bar */}
       <div style={styles.filterBar}>
-        <div style={styles.filterGroup}>
-          <select
-            value={filterValue}
-            onChange={(e) => onFilterChange(e.target.value)}
-            style={styles.select}
-          >
-            <option value="all">All</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
+        <select
+          value={filterValue}
+          onChange={(e) => onFilterChange(e.target.value)}
+          style={styles.select}
+        >
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
       </div>
 
-      {/* Table */}
       <div style={styles.tableWrap}>{children}</div>
     </div>
   )
 }
 
-// ─── Data Table Shell ───────────────────────────────────────
 export function SettingsTable({ columns, rows, emptyMsg = 'No records found.' }) {
   return (
     <table style={styles.table}>
@@ -164,25 +184,23 @@ export function SettingsTable({ columns, rows, emptyMsg = 'No records found.' })
   )
 }
 
-// ─── Action Buttons ─────────────────────────────────────────
 export function ActionButtons({ onEdit, onDelete, canEdit, canDelete }) {
   return (
     <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
       {canEdit && (
         <button onClick={onEdit} style={styles.actionBtn} title="Edit">
-          <Pencil size={14} color="#6b7280" />
+          <Pencil size={14} color={settingsTheme.textMuted} />
         </button>
       )}
       {canDelete && (
         <button onClick={onDelete} style={{ ...styles.actionBtn, ...styles.deleteBtn }} title="Delete">
-          <Trash2 size={14} color="#ef4444" />
+          <Trash2 size={14} color={settingsTheme.danger} />
         </button>
       )}
     </div>
   )
 }
 
-// ─── Confirm Dialog ─────────────────────────────────────────
 export function ConfirmDelete({ open, name, onConfirm, onCancel }) {
   if (!open) return null
   return (
@@ -201,19 +219,19 @@ export function ConfirmDelete({ open, name, onConfirm, onCancel }) {
   )
 }
 
-// ─── Toast ──────────────────────────────────────────────────
 export function Toast({ message, type = 'success', onClose }) {
   useEffect(() => {
     const t = setTimeout(onClose, 2800)
     return () => clearTimeout(t)
   }, [onClose])
 
+  const isSuccess = type === 'success'
   return (
     <div style={{
       ...styles.toast,
-      background: type === 'success' ? '#f0fdf4' : '#fef2f2',
-      border: `1px solid ${type === 'success' ? '#bbf7d0' : '#fecaca'}`,
-      color: type === 'success' ? '#166534' : '#dc2626',
+      background: isSuccess ? '#edf8ef' : '#fff3f3',
+      border: `1px solid ${isSuccess ? '#cce8cf' : '#fecaca'}`,
+      color: isSuccess ? '#1f5e25' : settingsTheme.danger,
     }}>
       {message}
     </div>
@@ -221,89 +239,180 @@ export function Toast({ message, type = 'success', onClose }) {
 }
 
 const styles = {
-  page: {},
-  header: {
-    display: 'flex', alignItems: 'flex-start',
-    justifyContent: 'space-between', marginBottom: 20,
+  page: {
+    background: settingsTheme.pageTint,
+    border: `1px solid ${settingsTheme.border}`,
+    borderRadius: 20,
+    padding: 22,
+    boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
   },
-  title: { margin: 0, fontSize: 22, fontWeight: 800, color: '#111827' },
-  subtitle: { margin: '4px 0 0', fontSize: 13, color: '#6b7280' },
-  headerActions: { display: 'flex', gap: 10, alignItems: 'center' },
+  header: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 18,
+    gap: 14,
+  },
+  title: {
+    margin: 0,
+    fontSize: 22,
+    fontWeight: 800,
+    color: settingsTheme.text,
+    letterSpacing: '-0.2px',
+  },
+  subtitle: {
+    margin: '4px 0 0',
+    fontSize: 13,
+    color: settingsTheme.textMuted,
+  },
+  headerActions: {
+    display: 'flex',
+    gap: 10,
+    alignItems: 'center',
+  },
   iconBtn: {
-    width: 36, height: 36, border: '1px solid #e5e7eb',
-    borderRadius: 8, background: '#fff', display: 'flex',
-    alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+    width: 36,
+    height: 36,
+    border: `1px solid ${settingsTheme.border}`,
+    borderRadius: 10,
+    background: '#fff',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
   },
   addBtn: {
-    display: 'flex', alignItems: 'center', gap: 6,
-    background: '#54B45B', color: '#fff', border: 'none',
-    borderRadius: 8, padding: '8px 16px', fontSize: 13.5,
-    fontWeight: 600, cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    background: settingsTheme.primarySoft,
+    color: '#fff',
+    border: 'none',
+    borderRadius: 10,
+    padding: '8px 16px',
+    fontSize: 13.5,
+    fontWeight: 700,
+    cursor: 'pointer',
   },
-  filterBar: { marginBottom: 16 },
-  filterGroup: { display: 'flex', gap: 10 },
+  filterBar: {
+    marginBottom: 14,
+    display: 'flex',
+    gap: 10,
+  },
   select: {
-    border: '1px solid #e5e7eb', borderRadius: 8,
-    padding: '6px 12px', fontSize: 13.5, color: '#374151',
-    background: '#fff', cursor: 'pointer', outline: 'none',
+    border: `1px solid ${settingsTheme.border}`,
+    borderRadius: 9,
+    padding: '6px 12px',
+    fontSize: 13.5,
+    color: '#425343',
+    background: '#fff',
+    cursor: 'pointer',
+    outline: 'none',
     minWidth: 120,
   },
   tableWrap: {
     background: '#fff',
-    border: '1px solid #e8f5e9',
-    borderRadius: 12,
+    border: `1px solid ${settingsTheme.border}`,
+    borderRadius: 14,
     overflow: 'hidden',
   },
-  table: { width: '100%', borderCollapse: 'collapse' },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+  },
   th: {
     padding: '12px 20px',
-    background: '#f9fafb',
+    background: '#eef2ee',
     fontSize: 13,
-    fontWeight: 600,
-    color: '#374151',
-    borderBottom: '1px solid #e8f5e9',
+    fontWeight: 700,
+    color: '#455645',
+    borderBottom: `1px solid ${settingsTheme.border}`,
   },
   empty: {
     padding: 40,
     textAlign: 'center',
-    color: '#9ca3af',
+    color: settingsTheme.textSubtle,
     fontSize: 14,
   },
   actionBtn: {
-    width: 30, height: 30, border: '1px solid #e5e7eb',
-    borderRadius: 7, background: '#f9fafb',
-    display: 'flex', alignItems: 'center',
-    justifyContent: 'center', cursor: 'pointer',
+    width: 30,
+    height: 30,
+    border: `1px solid ${settingsTheme.border}`,
+    borderRadius: 8,
+    background: '#f8faf8',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
   },
-  deleteBtn: { background: '#fff5f5', border: '1px solid #fecaca' },
+  deleteBtn: {
+    background: settingsTheme.dangerBg,
+    border: '1px solid #fecaca',
+  },
   overlay: {
-    position: 'fixed', inset: 0,
-    background: 'rgba(0,0,0,0.4)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(26,46,27,0.35)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     zIndex: 999,
   },
   dialog: {
-    background: '#fff', borderRadius: 14,
-    padding: 28, width: 360, boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
+    background: '#fff',
+    border: `1px solid ${settingsTheme.border}`,
+    borderRadius: 16,
+    padding: 26,
+    width: 360,
+    boxShadow: '0 20px 40px rgba(0,0,0,0.12)',
   },
-  dialogTitle: { margin: '0 0 10px', fontSize: 17, fontWeight: 700, color: '#111827' },
-  dialogText: { margin: '0 0 20px', fontSize: 13.5, color: '#6b7280', lineHeight: 1.5 },
-  dialogActions: { display: 'flex', gap: 10, justifyContent: 'flex-end' },
+  dialogTitle: {
+    margin: '0 0 10px',
+    fontSize: 17,
+    fontWeight: 700,
+    color: settingsTheme.text,
+  },
+  dialogText: {
+    margin: '0 0 20px',
+    fontSize: 13.5,
+    color: settingsTheme.textMuted,
+    lineHeight: 1.5,
+  },
+  dialogActions: {
+    display: 'flex',
+    gap: 10,
+    justifyContent: 'flex-end',
+  },
   cancelBtn: {
-    padding: '8px 18px', border: '1px solid #e5e7eb',
-    borderRadius: 8, background: '#fff', fontSize: 13.5,
-    fontWeight: 600, cursor: 'pointer', color: '#374151',
+    padding: '8px 18px',
+    border: `1px solid ${settingsTheme.border}`,
+    borderRadius: 10,
+    background: '#fff',
+    fontSize: 13.5,
+    fontWeight: 600,
+    cursor: 'pointer',
+    color: '#425343',
   },
   confirmBtn: {
-    padding: '8px 18px', border: 'none',
-    borderRadius: 8, background: '#ef4444', fontSize: 13.5,
-    fontWeight: 600, cursor: 'pointer', color: '#fff',
+    padding: '8px 18px',
+    border: 'none',
+    borderRadius: 10,
+    background: settingsTheme.danger,
+    fontSize: 13.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+    color: '#fff',
   },
   toast: {
-    position: 'fixed', bottom: 24, right: 24,
-    padding: '12px 20px', borderRadius: 10,
-    fontSize: 13.5, fontWeight: 600,
-    boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-    zIndex: 9999, animation: 'fadeSlideUp 0.2s ease',
+    position: 'fixed',
+    bottom: 24,
+    right: 24,
+    padding: '12px 20px',
+    borderRadius: 12,
+    fontSize: 13.5,
+    fontWeight: 600,
+    boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+    zIndex: 9999,
+    animation: 'fadeSlideUp 0.2s ease',
   },
 }

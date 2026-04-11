@@ -87,7 +87,7 @@ export default function FinishedGoodsPage({ isSuperUser = true }) {
       />
 
       <div style={ui.searchWrap}>
-        <Search size={15} color="#94a3b8" />
+        <Search size={15} color="#7a8a7a" />
         <input
           style={ui.searchInput}
           value={search}
@@ -122,7 +122,7 @@ export default function FinishedGoodsPage({ isSuperUser = true }) {
         {filtered.flatMap((entry) => {
           const rows = []
           rows.push(
-            <tr key={`${entry.id}-summary`} style={{ background: '#fbfcfd' }}>
+            <tr key={`${entry.id}-summary`} style={{ background: '#ffffff' }}>
               <td style={ui.td}><Checkbox checked={selected.includes(entry.id)} onChange={() => setSelected((prev) => (prev.includes(entry.id) ? prev.filter((id) => id !== entry.id) : [...prev, entry.id]))} /></td>
               <td style={ui.brandPrimary}>{entry.brand}</td>
               <td style={ui.td}>{entry.products.length} product(s)</td>
@@ -152,10 +152,10 @@ export default function FinishedGoodsPage({ isSuperUser = true }) {
           if (expanded[entry.id]) {
             entry.products.forEach((product, index) => {
               rows.push(
-                <tr key={`${entry.id}-product-${index}`} style={{ background: '#f7faf8' }}>
+                <tr key={`${entry.id}-product-${index}`} style={{ background: '#eef2ee' }}>
                   <td style={ui.td} />
                   <td style={ui.td} />
-                  <td style={{ ...ui.td, fontWeight: 600, color: '#334155' }}>- {product.product}</td>
+                  <td style={{ ...ui.td, fontWeight: 600, color: '#1f2f21' }}>- {product.product}</td>
                   <td style={ui.td}>{product.packing}</td>
                   <td style={ui.td} />
                   <td style={{ ...ui.td, fontWeight: 700 }}>{Number(product.cartons || 0).toLocaleString()}</td>
