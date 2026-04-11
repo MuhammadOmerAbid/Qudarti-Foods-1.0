@@ -75,6 +75,7 @@ export default function FinishedGoodsPage({ isSuperUser = true }) {
             </AppButton>
             <AppButton
               type="primary"
+              style={{ background: 'linear-gradient(90deg, #1B5E20 0%, #2E7D32 45%, #4CAF50 100%)', border: 'none', color: '#fff' }}
               onClick={() => {
                 resetDraft()
                 setShowEditor(true)

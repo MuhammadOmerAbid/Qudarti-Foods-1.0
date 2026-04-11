@@ -34,6 +34,7 @@ export default function DashboardLayout({ children }) {
   }, [])
 
   const initial = (user?.username?.[0] || 'U').toUpperCase()
+  const accountType = user?.role === 'superuser' ? 'Super User' : 'User'
 
   if (!hasHydrated || !user || !token || !panel) return null
 
@@ -44,28 +45,28 @@ export default function DashboardLayout({ children }) {
       <main style={{ ...s.main, paddingLeft: collapsed ? 88 : 256 }}>
         <header style={s.header}>
           <div style={s.searchWrap}>
-            <Search size={15} color="#9ca3af" style={{ flexShrink: 0 }} />
+            <Search size={14} color="#6c8d6c" style={{ flexShrink: 0 }} />
             <input style={s.searchInput} placeholder="Search task" type="text" />
-            <kbd style={s.searchKbd}>Ctrl+F</kbd>
+            <kbd style={s.searchKbd}>⌘ F</kbd>
           </div>
 
           <div style={{ flex: 1 }} />
 
           <div style={s.headerRight}>
             <button style={s.iconBtn} title="Messages">
-              <Mail size={18} strokeWidth={1.8} color="#6b7280" />
+              <Mail size={16} strokeWidth={1.5} color="#528a52" />
             </button>
             <button style={s.iconBtn} title="Notifications">
-              <Bell size={18} strokeWidth={1.8} color="#6b7280" />
+              <Bell size={16} strokeWidth={1.5} color="#528a52" />
             </button>
+
+            <div style={s.divider} />
 
             <div style={s.userPill}>
               <div style={s.avatar}>{initial}</div>
               <div style={s.userMeta}>
                 <span style={s.userName}>{user?.username || 'User'}</span>
-                <span style={s.userEmail}>
-                  {user?.email || (user?.username?.toLowerCase() + '@qudrati.com')}
-                </span>
+                <span style={s.userEmail}>{accountType}</span>
               </div>
             </div>
           </div>
@@ -91,60 +92,66 @@ const s = {
     display: 'flex',
     flexDirection: 'column',
     transition: 'padding-left 0.25s cubic-bezier(.4,0,.2,1)',
+    background: '#ffffff',
   },
-
   header: {
-    margin: '16px 20px 0 20px',
+    margin: '14px 20px 0 20px',
     height: 64,
-    backgroundColor: '#f2f4f2',
-    border: '1px solid #e2e8e2',
-    borderRadius: '20px',
+    backgroundColor: '#e8ece8',
+    border: '1px solid #d4dcd4',
+    borderRadius: '40px',
     display: 'flex',
     alignItems: 'center',
     padding: '0 20px',
-    gap: 16,
+    gap: 12,
     position: 'sticky',
-    top: 16,
+    top: 14,
     zIndex: 30,
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.03)',
   },
   searchWrap: {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
     backgroundColor: '#ffffff',
-    border: '1px solid #e2e8e2',
+    border: '1px solid #dde4dd',
     borderRadius: '40px',
-    padding: '8px 16px',
-    flex: '0 1 240px',
+    padding: '6px 16px',
+    flex: '0 1 260px',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
   },
   searchInput: {
     border: 'none',
     background: 'transparent',
     outline: 'none',
-    fontSize: 13.5,
-    color: '#374151',
+    fontSize: 13,
+    color: '#2c3e2c',
     flex: 1,
     minWidth: 0,
     fontFamily: 'inherit',
   },
   searchKbd: {
-    fontSize: 11,
-    color: '#8a9a8a',
-    backgroundColor: '#eef2ee',
+    fontSize: 10,
+    color: '#8aa88a',
+    backgroundColor: '#f3f7f3',
     padding: '2px 8px',
-    borderRadius: '8px',
-    flexShrink: 0,
+    borderRadius: '30px',
+    fontWeight: 600,
     fontFamily: 'inherit',
-    fontWeight: 500,
     border: 'none',
   },
   headerRight: { display: 'flex', alignItems: 'center', gap: 10 },
+  divider: {
+    width: 1,
+    height: 30,
+    backgroundColor: '#c8d4c8',
+    margin: '0 6px',
+  },
   iconBtn: {
     width: 38,
     height: 38,
-    borderRadius: '12px',
-    border: '1px solid #e2e8e2',
+    borderRadius: '30px',
+    border: '1px solid #cde0cd',
     backgroundColor: '#ffffff',
     display: 'flex',
     alignItems: 'center',
@@ -157,9 +164,9 @@ const s = {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    padding: '5px 16px 5px 6px',
+    padding: '4px 16px 4px 4px',
     borderRadius: '40px',
-    border: '1px solid #e2e8e2',
+    border: '1px solid #cde0cd',
     backgroundColor: '#ffffff',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
@@ -167,23 +174,23 @@ const s = {
   avatar: {
     width: 36,
     height: 36,
-    borderRadius: '12px',
-    background: 'linear-gradient(135deg, #2d7a33, #54B45B)',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #1a5c22, #2d9e3a)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: 700,
     color: '#fff',
     flexShrink: 0,
+    boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
   },
   userMeta: { display: 'flex', flexDirection: 'column' },
-  userName: { fontSize: 13, fontWeight: 700, color: '#1a2e1b', lineHeight: 1.2 },
-  userEmail: { fontSize: 11, color: '#8a9a8a', lineHeight: 1.2 },
-
+  userName: { fontSize: 12.5, fontWeight: 700, color: '#1e2a1e', lineHeight: 1.3 },
+  userEmail: { fontSize: 10.5, color: '#7a9a7a', lineHeight: 1.3 },
   content: {
     flex: 1,
-    padding: '20px',
-    backgroundColor: 'transparent',
+    padding: '20px 20px 28px',
+    backgroundColor: '#ffffff',
   },
 }
