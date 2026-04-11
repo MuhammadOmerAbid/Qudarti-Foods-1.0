@@ -125,7 +125,7 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
       />
 
       <div style={ui.searchWrap}>
-        <Search size={15} color="#94a3b8" />
+        <Search size={15} color="#7a8a7a" />
         <input
           style={ui.searchInput}
           value={search}

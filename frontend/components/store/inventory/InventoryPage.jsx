@@ -100,7 +100,7 @@ export default function InventoryPage({ isSuperUser = true }) {
       </div>
 
       <div style={ui.searchWrap}>
-        <Search size={15} color="#94a3b8" />
+        <Search size={15} color="#7a8a7a" />
         <input
           style={ui.searchInput}
           value={search}
@@ -125,7 +125,7 @@ export default function InventoryPage({ isSuperUser = true }) {
       >
         {Object.entries(grouped).flatMap(([brandName, rows]) =>
           rows.map((item, idx) => (
-            <tr key={item.id} style={{ background: idx % 2 === 0 ? '#ffffff' : '#fbfcfd' }}>
+            <tr key={item.id} style={{ background: idx % 2 === 0 ? '#ffffff' : '#f7faf7' }}>
               <td style={ui.td}><Checkbox checked={selected.includes(item.id)} onChange={() => toggleSelect(item.id)} /></td>
               <td style={{ ...ui.td, ...(idx === 0 ? ui.brandPrimary : ui.brandMuted) }}>{idx === 0 ? brandName : ''}</td>
               <td style={ui.td}>{item.category}</td>

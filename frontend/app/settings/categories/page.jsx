@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/authStore'
 import { categoriesApi } from '@/lib/api/endpoints'
 import {
   SettingsPageShell, SettingsTable, Toggle,
-  ActionButtons, InlineInput, ConfirmDelete, Toast,
+  ActionButtons, InlineInput, ConfirmDelete, Toast, settingsTheme,
 } from '@/components/settings/SettingsShared'
 
 export default function CategoriesPage() {
@@ -78,7 +78,7 @@ export default function CategoriesPage() {
 
   const rows = [
     ...(adding ? [
-      <tr key="new" style={{ background: '#f0fdf4' }}>
+      <tr key="new" style={{ background: '#edf8ef' }}>
         <td style={td}>
           <InlineInput value={newName} onChange={setNewName} onSave={handleAdd}
             onCancel={() => { setAdding(false); setNewName('') }} placeholder="Category name" />
@@ -88,8 +88,8 @@ export default function CategoriesPage() {
       </tr>
     ] : []),
     ...filtered.map((item) => (
-      <tr key={item.id} style={{ borderBottom: '1px solid #f0f9f0' }}
-        onMouseEnter={(e) => e.currentTarget.style.background = '#fafffe'}
+      <tr key={item.id} style={{ borderBottom: `1px solid ${settingsTheme.borderSoft}` }}
+        onMouseEnter={(e) => e.currentTarget.style.background = '#f3f8f3'}
         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
       >
         <td style={{ ...td, textAlign: 'center' }}>
@@ -97,7 +97,7 @@ export default function CategoriesPage() {
             <InlineInput value={editVal} onChange={setEditVal}
               onSave={() => handleEdit(item.id)}
               onCancel={() => { setEditId(null); setEditVal('') }} placeholder="Category name" />
-          ) : <span style={{ fontSize: 14, color: '#374151' }}>{item.name}</span>}
+          ) : <span style={{ fontSize: 14, color: '#425343' }}>{item.name}</span>}
         </td>
         <td style={{ ...td, textAlign: 'center' }}>
           <Toggle checked={!!item.status} onChange={() => handleToggle(item)} disabled={!canEdit} />
@@ -118,7 +118,7 @@ export default function CategoriesPage() {
         filterValue={filter} onFilterChange={setFilter}
         addLabel="+ Add Category" canEdit={canEdit}>
         {loading
-          ? <div style={{ padding: 40, textAlign: 'center', color: '#9ca3af' }}>Loading...</div>
+          ? <div style={{ padding: 40, textAlign: 'center', color: settingsTheme.textSubtle }}>Loading...</div>
           : <SettingsTable columns={[
               { key: 'cat', label: 'Category', align: 'center' },
               { key: 'status', label: 'Status', align: 'center' },
