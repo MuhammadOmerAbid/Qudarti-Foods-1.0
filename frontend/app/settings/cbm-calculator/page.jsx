@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { Plus, Trash2, Calculator, RotateCcw, Package } from 'lucide-react'
-import { settingsTheme } from '@/components/settings/SettingsShared'
+import { SettingsSelect, settingsTheme } from '@/components/settings/SettingsShared'
 
 const UNITS = ['Inch', 'CM', 'MM']
 const WEIGHT_UNITS = ['Kg', 'Gram', 'Lb']
@@ -82,7 +82,9 @@ export default function CBMCalculatorPage() {
   const weightPct = totalWeightUsed > 0 ? Math.min((totalWeightUsed / containerWeight) * 100, 100) : 0
 
   const input = (style = {}) => ({
-    border: `1px solid ${settingsTheme.border}`,
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: settingsTheme.border,
     borderRadius: 8,
     padding: '6px 8px',
     fontSize: 12.5,
@@ -94,7 +96,7 @@ export default function CBMCalculatorPage() {
   })
 
   const select = (style = {}) => ({
-    ...input({ padding: '6px 6px', fontSize: 12, color: '#425343' }),
+    ...input({ padding: '6px 28px 6px 8px', fontSize: 12, color: settingsTheme.text }),
     ...style,
   })
 
@@ -109,14 +111,15 @@ export default function CBMCalculatorPage() {
             </h1>
             <p style={subtitle}>Calculate cubic meters and shipping weight for container loading.</p>
           </div>
-          <select
+          <SettingsSelect
             value={containerType}
             onChange={(e) => setContainerType(e.target.value)}
-            style={{ ...select({ padding: '7px 12px', fontSize: 13, fontWeight: 600 }), minWidth: 180 }}
+            wrapperStyle={{ minWidth: 180 }}
+            selectStyle={{ ...select({ padding: '7px 30px 7px 12px', fontSize: 13, fontWeight: 600 }) }}
           >
             <option value="40ft">40 Feet Container</option>
             <option value="20ft">20 Feet Container</option>
-          </select>
+          </SettingsSelect>
         </div>
 
         <div style={summaryGrid}>
@@ -254,9 +257,14 @@ export default function CBMCalculatorPage() {
                     <input value={row.height} onChange={(e) => updateRow(row.id, 'height', e.target.value)} placeholder="H" type="number" style={input({ width: 68 })} />
                   </td>
                   <td style={td}>
-                    <select value={row.dimUnit} onChange={(e) => updateRow(row.id, 'dimUnit', e.target.value)} style={select({ width: 72 })}>
+                    <SettingsSelect
+                      value={row.dimUnit}
+                      onChange={(e) => updateRow(row.id, 'dimUnit', e.target.value)}
+                      wrapperStyle={{ width: 72 }}
+                      selectStyle={select({ width: '100%' })}
+                    >
                       {UNITS.map((unit) => <option key={unit}>{unit}</option>)}
-                    </select>
+                    </SettingsSelect>
                   </td>
                   <td style={td}>
                     <input value={row.quantity} onChange={(e) => updateRow(row.id, 'quantity', e.target.value)} placeholder="0" type="number" style={input({ width: 72 })} />
@@ -265,9 +273,14 @@ export default function CBMCalculatorPage() {
                     <input value={row.weightPerCarton} onChange={(e) => updateRow(row.id, 'weightPerCarton', e.target.value)} placeholder="0" type="number" style={input({ width: 72 })} />
                   </td>
                   <td style={td}>
-                    <select value={row.weightUnit} onChange={(e) => updateRow(row.id, 'weightUnit', e.target.value)} style={select({ width: 72 })}>
+                    <SettingsSelect
+                      value={row.weightUnit}
+                      onChange={(e) => updateRow(row.id, 'weightUnit', e.target.value)}
+                      wrapperStyle={{ width: 72 }}
+                      selectStyle={select({ width: '100%' })}
+                    >
                       {WEIGHT_UNITS.map((unit) => <option key={unit}>{unit}</option>)}
-                    </select>
+                    </SettingsSelect>
                   </td>
                   <td style={{ ...td, color: settingsTheme.textMuted, fontFamily: 'monospace', fontSize: 12 }}>
                     {row.cbmPerCarton > 0 ? row.cbmPerCarton.toFixed(6) : '-'}

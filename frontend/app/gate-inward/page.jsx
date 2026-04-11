@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { useAuthStore } from '@/store/authStore'
@@ -48,6 +48,254 @@ const INITIAL_RECORDS = [
 function fmtItems(items, field) { return items.map(i => i[field]).join(', ') }
 function fmtQty(items) { return items.map(i => `${i.quantity} ${i.unit}`).join(', ') }
 
+function DropdownField({
+  value,
+  onChange,
+  options,
+  placeholder,
+  disabled = false,
+  compact = false,
+}) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef(null)
+
+  const selected = useMemo(
+    () => options.find((opt) => String(opt.value) === String(value)),
+    [options, value]
+  )
+
+  useEffect(() => {
+    const onOutside = (event) => {
+      if (!rootRef.current?.contains(event.target)) setOpen(false)
+    }
+    const onEsc = (event) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onOutside)
+    document.addEventListener('keydown', onEsc)
+    return () => {
+      document.removeEventListener('mousedown', onOutside)
+      document.removeEventListener('keydown', onEsc)
+    }
+  }, [])
+
+  return (
+    <div ref={rootRef} style={s.dropdownWrap}>
+      <button
+        type="button"
+        style={{
+          ...s.dropdownTrigger,
+          ...(compact ? s.dropdownTriggerCompact : {}),
+          ...(disabled ? s.dropdownDisabled : {}),
+        }}
+        onClick={() => !disabled && setOpen((prev) => !prev)}
+        disabled={disabled}
+      >
+        <span style={selected ? s.dropdownValue : s.dropdownPlaceholder}>
+          {selected?.label || placeholder}
+        </span>
+        <ChevronDown
+          size={12}
+          style={{ ...s.dropdownChevronIcon, transform: `translateY(-50%) rotate(${open ? 180 : 0}deg)` }}
+        />
+      </button>
+
+      {open && !disabled ? (
+        <div style={s.dropdownMenu}>
+          {options.map((option) => {
+            const active = String(option.value) === String(value)
+            return (
+              <button
+                key={String(option.value)}
+                type="button"
+                style={{ ...s.dropdownItem, ...(active ? s.dropdownItemActive : {}) }}
+                onClick={() => {
+                  onChange(option.value)
+                  setOpen(false)
+                }}
+              >
+                {option.label}
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+// UPDATED: DatePicker with auto-positioning and right alignment option
+function DatePicker({ value, onChange, placeholder = "Select date", alignRight = false }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [tempDate, setTempDate] = useState(value ? new Date(value) : null)
+  const [displayValue, setDisplayValue] = useState(value || '')
+  const [calendarPosition, setCalendarPosition] = useState({ top: '100%', left: 0, right: 'auto' })
+  const pickerRef = useRef(null)
+  const buttonRef = useRef(null)
+  const containerRef = useRef(null)
+
+  const currentDate = tempDate || new Date()
+  const currentYear = currentDate.getFullYear()
+  const currentMonth = currentDate.getMonth()
+
+  const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate()
+  const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay()
+
+  // Calculate position to prevent going off-screen
+  const calculatePosition = () => {
+    if (!buttonRef.current) return
+    
+    const rect = buttonRef.current.getBoundingClientRect()
+    const viewportHeight = window.innerHeight
+    const calendarHeight = 320
+    const spaceBelow = viewportHeight - rect.bottom
+    const spaceAbove = rect.top
+    
+    if (spaceBelow < calendarHeight && spaceAbove > spaceBelow) {
+      setCalendarPosition({ bottom: '100%', top: 'auto', left: alignRight ? 'auto' : 0, right: alignRight ? 0 : 'auto' })
+    } else {
+      setCalendarPosition({ top: '100%', bottom: 'auto', left: alignRight ? 'auto' : 0, right: alignRight ? 0 : 'auto' })
+    }
+  }
+
+  useEffect(() => {
+    if (isOpen) {
+      calculatePosition()
+      window.addEventListener('resize', calculatePosition)
+      window.addEventListener('scroll', calculatePosition)
+      return () => {
+        window.removeEventListener('resize', calculatePosition)
+        window.removeEventListener('scroll', calculatePosition)
+      }
+    }
+  }, [isOpen, alignRight])
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target) && 
+          buttonRef.current && !buttonRef.current.contains(event.target)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleDateSelect = (day) => {
+    const selected = new Date(currentYear, currentMonth, day)
+    const formattedDate = selected.toISOString().split('T')[0]
+    setTempDate(selected)
+    setDisplayValue(formattedDate)
+    onChange(formattedDate)
+    setIsOpen(false)
+  }
+
+  const handleToday = () => {
+    const today = new Date()
+    const formattedDate = today.toISOString().split('T')[0]
+    setTempDate(today)
+    setDisplayValue(formattedDate)
+    onChange(formattedDate)
+    setIsOpen(false)
+  }
+
+  const handleClear = () => {
+    setTempDate(null)
+    setDisplayValue('')
+    onChange('')
+    setIsOpen(false)
+  }
+
+  const changeMonth = (increment) => {
+    setTempDate(new Date(currentYear, currentMonth + increment, 1))
+  }
+
+  const renderCalendar = () => {
+    const daysInMonth = getDaysInMonth(currentYear, currentMonth)
+    const firstDay = getFirstDayOfMonth(currentYear, currentMonth)
+    const days = []
+    const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+
+    weekdays.forEach(day => {
+      days.push(<div key={`header-${day}`} style={s.calendarWeekday}>{day}</div>)
+    })
+
+    for (let i = 0; i < firstDay; i++) {
+      days.push(<div key={`empty-${i}`} style={s.calendarDayEmpty}></div>)
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const isSelected = tempDate && 
+        tempDate.getDate() === day && 
+        tempDate.getMonth() === currentMonth && 
+        tempDate.getFullYear() === currentYear
+      const isToday = new Date().getDate() === day && 
+        new Date().getMonth() === currentMonth && 
+        new Date().getFullYear() === currentYear
+
+      days.push(
+        <button
+          key={day}
+          onClick={() => handleDateSelect(day)}
+          style={{
+            ...s.calendarDay,
+            ...(isSelected ? s.calendarDaySelected : {}),
+            ...(isToday ? s.calendarDayToday : {})
+          }}
+        >
+          {day}
+        </button>
+      )
+    }
+
+    return days
+  }
+
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December']
+
+  return (
+    <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
+      <button
+        ref={buttonRef}
+        style={s.datePickerTrigger}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <Calendar size={13} color="#7a8a7a" />
+        <span style={displayValue ? s.datePickerValue : s.datePickerPlaceholder}>
+          {displayValue || placeholder}
+        </span>
+        <ChevronDown
+          size={12}
+          style={{ ...s.dropdownChevronIcon, transform: `translateY(-50%) rotate(${isOpen ? 180 : 0}deg)` }}
+        />
+      </button>
+
+      {isOpen && (
+        <div 
+          ref={pickerRef} 
+          style={{
+            ...s.calendarContainer,
+            position: 'absolute',
+            ...calendarPosition
+          }}
+        >
+          <div style={s.calendarHeader}>
+            <button onClick={() => changeMonth(-1)} style={s.calendarNavBtn}>←</button>
+            <span style={s.calendarMonthYear}>{monthNames[currentMonth]} {currentYear}</span>
+            <button onClick={() => changeMonth(1)} style={s.calendarNavBtn}>→</button>
+          </div>
+          <div style={s.calendarGrid}>{renderCalendar()}</div>
+          <div style={s.calendarFooter}>
+            <button onClick={handleToday} style={s.calendarFooterBtn}>Today</button>
+            <button onClick={handleClear} style={s.calendarFooterBtn}>Clear</button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function GateInwardPage() {
   const router = useRouter()
   const { user } = useAuthStore()
@@ -68,7 +316,14 @@ export default function GateInwardPage() {
   const allBrands = useMemo(() => [...new Set(records.flatMap(r => r.items.map(i => i.brandName)))], [records])
   const allCategories = useMemo(() => [...new Set(records.flatMap(r => r.items.map(i => i.categoryName)))], [records])
 
-  const parseDate = (str) => { const [d, m, y] = str.split('/'); return new Date(`${y}-${m}-${d}`) }
+  const parseDate = (str) => {
+    if (!str) return null
+    if (str.includes('/')) {
+      const [d, m, y] = str.split('/')
+      return new Date(`${y}-${m}-${d}`)
+    }
+    return new Date(str)
+  }
 
   const filtered = useMemo(() => records.filter(r => {
     const hay = [r.grNo, r.supplierName, r.address, r.note, r.receiveDate, r.status, ...r.items.map(i => `${i.brandName} ${i.categoryName} ${i.productName} ${i.quantity} ${i.unit}`)].join(' ').toLowerCase()
@@ -77,8 +332,8 @@ export default function GateInwardPage() {
     const matchBrand = filterBrand === 'All Brands' || r.items.some(i => i.brandName === filterBrand)
     const matchCategory = filterCategory === 'All Categories' || r.items.some(i => i.categoryName === filterCategory)
     let matchDate = true
-    if (filterDateFrom) matchDate = matchDate && parseDate(r.receiveDate) >= new Date(filterDateFrom)
-    if (filterDateTo) matchDate = matchDate && parseDate(r.receiveDate) <= new Date(filterDateTo)
+    if (filterDateFrom) matchDate = matchDate && parseDate(r.receiveDate) >= parseDate(filterDateFrom)
+    if (filterDateTo) matchDate = matchDate && parseDate(r.receiveDate) <= parseDate(filterDateTo)
     return matchSearch && matchStatus && matchBrand && matchCategory && matchDate
   }), [records, search, filterStatus, filterBrand, filterCategory, filterDateFrom, filterDateTo])
 
@@ -102,7 +357,7 @@ export default function GateInwardPage() {
 
   const exportPDF = (rows) => {
     const win = window.open('', '_blank')
-    win.document.write(`<html><head><title>Gate Inward Report</title><style>body{font-family:Arial;padding:20px;font-size:12px}h2{color:#2d7a33}table{width:100%;border-collapse:collapse;margin-top:16px}th{background:#f0fdf4;color:#1a2e1b;padding:8px;text-align:left;border-bottom:2px solid #bbf7d0}td{padding:7px 8px;border-bottom:1px solid #e5e7eb}.r{background:#dcfce7;color:#166534;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}.p{background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}</style></head><body><h2>Gate Inward Report</h2><p style="color:#6b7280">Generated: ${new Date().toLocaleDateString('en-PK')}</p><table><tr><th>GR No</th><th>Supplier</th><th>Brand</th><th>Category</th><th>Product</th><th>Quantity</th><th>Date</th><th>Status</th></tr>${rows.flatMap(r => r.items.map(item => `<tr><td>${r.grNo}</td><td>${r.supplierName}</td><td>${item.brandName}</td><td>${item.categoryName}</td><td>${item.productName}</td><td>${item.quantity} ${item.unit}</td><td>${r.receiveDate}</td><td><span class="${r.status === 'Received' ? 'r' : 'p'}">${r.status}</span></td></tr>`)).join('')}</table></body></html>`)
+    win.document.write(`<html><head><title>Gate Inward Report</title><style>body{font-family:Arial;padding:20px;font-size:12px}h2{color:#2d7a33}table{width:100%;border-collapse:collapse;margin-top:16px}th{background:#f0fdf4;color:#1a2e1b;padding:8px;text-align:left;border-bottom:2px solid #bbf7d0}td{padding:7px 8px;border-bottom:1px solid #e5e7eb}.r{background:#dcfce7;color:#166534;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}.p{background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}</style></head><body><h2>Gate Inward Report</h2><p style="color:#6b7280">Generated: ${new Date().toLocaleDateString('en-PK')}</p><table><thead><tr><th>GR No</th><th>Supplier</th><th>Brand</th><th>Category</th><th>Product</th><th>Quantity</th><th>Date</th><th>Status</th></tr></thead><tbody>${rows.flatMap(r => r.items.map(item => `<tr><td>${r.grNo}</td><td>${r.supplierName}</td><td>${item.brandName}</td><td>${item.categoryName}</td><td>${item.productName}</td><td>${item.quantity} ${item.unit}</td><td>${r.receiveDate}</td><td><span class="${r.status === 'Received' ? 'r' : 'p'}">${r.status}</span></td></tr>`)).join('')}</tbody></table></body></html>`)
     win.document.close(); win.print()
   }
 
@@ -140,19 +395,45 @@ export default function GateInwardPage() {
         <div style={s.controlsCard}>
           <div style={s.filtersRow}>
             <div style={s.filterGroup}>
-              {[['filterStatus', filterStatus, setFilterStatus, ['All Status', 'Received', 'Pending']], ['filterBrand', filterBrand, setFilterBrand, ['All Brands', ...allBrands]], ['filterCategory', filterCategory, setFilterCategory, ['All Categories', ...allCategories]]].map(([key, val, setter, opts]) => (
-                <div key={key} style={{ position: 'relative' }}>
-                  <select style={s.filterSelect} value={val} onChange={e => setter(e.target.value)}>
-                    {opts.map(o => <option key={o}>{o}</option>)}
-                  </select>
-                  <ChevronDown size={12} style={s.selectChevron} />
-                </div>
-              ))}
+              <DropdownField
+                value={filterStatus}
+                onChange={setFilterStatus}
+                placeholder="All Status"
+                options={['All Status', 'Received', 'Pending'].map((entry) => ({ value: entry, label: entry }))}
+                compact
+              />
+              <DropdownField
+                value={filterBrand}
+                onChange={setFilterBrand}
+                placeholder="All Brands"
+                options={['All Brands', ...allBrands].map((entry) => ({ value: entry, label: entry }))}
+                compact
+              />
+              <DropdownField
+                value={filterCategory}
+                onChange={setFilterCategory}
+                placeholder="All Categories"
+                options={['All Categories', ...allCategories].map((entry) => ({ value: entry, label: entry }))}
+                compact
+              />
             </div>
             <div style={s.dateGroup}>
-              <div style={s.dateField}><Calendar size={13} color="#7a8a7a" /><input type="date" style={s.dateInput} value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)} /></div>
+              <div style={s.dateField}>
+                <DatePicker
+                  value={filterDateFrom}
+                  onChange={setFilterDateFrom}
+                  placeholder="From Date"
+                />
+              </div>
               <span style={{ color: '#7a8a7a', fontSize: 12 }}>to</span>
-              <div style={s.dateField}><Calendar size={13} color="#7a8a7a" /><input type="date" style={s.dateInput} value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} /></div>
+              <div style={s.dateField}>
+                <DatePicker
+                  value={filterDateTo}
+                  onChange={setFilterDateTo}
+                  placeholder="To Date"
+                  alignRight={true}
+                />
+              </div>
             </div>
           </div>
 
@@ -419,9 +700,14 @@ const s = {
   },
   filtersRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 12 },
   filterGroup: { display: 'flex', gap: 8, flexWrap: 'wrap' },
-  filterSelect: {
-    appearance: 'none',
-    WebkitAppearance: 'none',
+  dropdownWrap: { position: 'relative', minWidth: 160 },
+  dropdownTrigger: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: 8,
+    position: 'relative',
     background: '#fff',
     border: '1px solid #d4dfd4',
     borderRadius: 40,
@@ -430,12 +716,180 @@ const s = {
     color: '#1f2f21',
     cursor: 'pointer',
     outline: 'none',
+    minHeight: 38,
+    textAlign: 'left',
+  },
+  dropdownTriggerCompact: {
     fontWeight: 600,
   },
-  selectChevron: { position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#7a8a7a' },
+  dropdownValue: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    color: '#1f2f21',
+  },
+  dropdownPlaceholder: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    color: '#7a8a7a',
+  },
+  dropdownChevronIcon: {
+    position: 'absolute',
+    right: 12,
+    top: '50%',
+    color: '#7a8a7a',
+    transition: 'transform 0.18s ease',
+    flexShrink: 0,
+    pointerEvents: 'none',
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: 'calc(100% + 6px)',
+    left: 0,
+    right: 0,
+    zIndex: 45,
+    background: '#fff',
+    border: '1px solid #d4dfd4',
+    borderRadius: 12,
+    padding: 4,
+    boxShadow: '0 12px 28px rgba(26, 61, 31, 0.12)',
+    maxHeight: 240,
+    overflowY: 'auto',
+  },
+  dropdownItem: {
+    width: '100%',
+    border: 'none',
+    background: 'transparent',
+    textAlign: 'left',
+    borderRadius: 8,
+    padding: '8px 10px',
+    fontSize: 12.5,
+    color: '#1f2f21',
+    cursor: 'pointer',
+  },
+  dropdownItemActive: {
+    background: '#e8f0e8',
+    color: '#1f7a2b',
+    fontWeight: 700,
+  },
+  dropdownDisabled: {
+    background: '#f4f6f4',
+    color: '#9aa69a',
+    cursor: 'not-allowed',
+  },
   dateGroup: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  dateField: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #d4dfd4', borderRadius: 40, padding: '8px 11px' },
-  dateInput: { border: 'none', outline: 'none', fontSize: 12.5, color: '#1f2f21', background: 'transparent', width: 120 },
+  dateField: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #d4dfd4', borderRadius: 40, padding: '8px 11px', minWidth: 168, position: 'relative' },
+  datePickerTrigger: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    background: 'transparent',
+    border: 'none',
+    padding: 0,
+    cursor: 'pointer',
+    width: '100%',
+    position: 'relative',
+  },
+  datePickerValue: {
+    fontSize: 12.5,
+    color: '#1f2f21',
+    fontWeight: 600,
+  },
+  datePickerPlaceholder: {
+    fontSize: 12.5,
+    color: '#7a8a7a',
+    fontWeight: 600,
+  },
+  calendarContainer: {
+    zIndex: 50,
+    background: '#fff',
+    border: '1px solid #d4dfd4',
+    borderRadius: 12,
+    padding: '12px',
+    boxShadow: '0 12px 28px rgba(26, 61, 31, 0.15)',
+    minWidth: '280px',
+  },
+  calendarHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottom: '1px solid #e2e8e2',
+  },
+  calendarNavBtn: {
+    background: 'transparent',
+    border: '1px solid #d4dfd4',
+    borderRadius: 8,
+    padding: '4px 8px',
+    cursor: 'pointer',
+    color: '#2d7a33',
+    fontSize: 14,
+    fontWeight: 600,
+    transition: 'all 0.2s',
+  },
+  calendarMonthYear: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: '#1a3d1f',
+  },
+  calendarGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(7, 1fr)',
+    gap: '4px',
+    marginBottom: 12,
+  },
+  calendarWeekday: {
+    textAlign: 'center',
+    fontSize: 11,
+    fontWeight: 700,
+    color: '#7a8a7a',
+    padding: '6px 0',
+  },
+  calendarDay: {
+    background: 'transparent',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+    borderRadius: 8,
+    padding: '6px 0',
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#415443',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+  calendarDayEmpty: {
+    padding: '6px 0',
+  },
+  calendarDaySelected: {
+    background: '#1a3d1f',
+    color: '#fff',
+    borderColor: '#1a3d1f',
+  },
+  calendarDayToday: {
+    borderColor: '#2d7a33',
+    fontWeight: 700,
+  },
+  calendarFooter: {
+    display: 'flex',
+    gap: 8,
+    justifyContent: 'flex-end',
+    paddingTop: 8,
+    borderTop: '1px solid #e2e8e2',
+  },
+  calendarFooterBtn: {
+    background: 'transparent',
+    border: '1px solid #d4dfd4',
+    borderRadius: 6,
+    padding: '4px 10px',
+    fontSize: 11,
+    fontWeight: 600,
+    color: '#2d7a33',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
   searchWrap: { display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #d4dfd4', borderRadius: 40, padding: '10px 14px' },
   searchInput: { flex: 1, border: 'none', outline: 'none', fontSize: 13.5, color: '#1f2f21', background: 'transparent' },
   clearBtn: { background: 'none', border: 'none', cursor: 'pointer', color: '#7a8a7a', display: 'flex', padding: 0 },

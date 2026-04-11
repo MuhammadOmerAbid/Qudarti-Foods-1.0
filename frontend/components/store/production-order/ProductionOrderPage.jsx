@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Search, Plus, FileText, Pencil, Trash2, RefreshCw, X } from 'lucide-react'
 import {
   PRODUCTION_INITIAL,
@@ -16,7 +17,11 @@ import {
   SectionHeader,
   ui,
 } from '@/components/store/shared/StoreShared'
+
+const PRODUCTION_ORDER_DRAFT_KEY = 'store.productionOrderDrafts'
+
 export default function ProductionOrderPage({ isSuperUser = true }) {
+  const router = useRouter()
   const [orders, setOrders] = useState(PRODUCTION_INITIAL)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState([])
@@ -29,10 +34,41 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
     items: [{ sr: 1, goods: '', packing: '', qty: '', status: 'Pending' }],
   })
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    try {
+      const raw = window.sessionStorage.getItem(PRODUCTION_ORDER_DRAFT_KEY)
+      if (!raw) return
+
+      const drafts = JSON.parse(raw)
+      if (!Array.isArray(drafts) || drafts.length === 0) return
+
+      setOrders((prev) => {
+        let serialNo = nextSerial(prev)
+        const prepared = drafts.map((draft, index) => ({
+          ...draft,
+          id: draft.id || Date.now() + index,
+          serialNo: serialNo++,
+        }))
+        return [...prepared, ...prev]
+      })
+    } catch {
+      // Ignore malformed session data.
+    } finally {
+      window.sessionStorage.removeItem(PRODUCTION_ORDER_DRAFT_KEY)
+    }
+  }, [])
+
   const filtered = useMemo(() => {
     if (!search.trim()) return orders
     const q = search.toLowerCase()
-    return orders.filter((order) => [order.name, ...order.items.map((item) => `${item.goods} ${item.packing} ${item.status}`)].join(' ').toLowerCase().includes(q))
+    return orders.filter((order) =>
+      [order.name, ...order.items.map((item) => `${item.goods} ${item.packing} ${item.status}`)]
+        .join(' ')
+        .toLowerCase()
+        .includes(q)
+    )
   }, [orders, search])
 
   const grouped = useMemo(() => {
@@ -61,16 +97,6 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
     [orders]
   )
 
-  const openNewEditor = () => {
-    setEditor({
-      id: null,
-      name: '',
-      date: new Date().toISOString().slice(0, 10),
-      items: [{ sr: 1, goods: '', packing: '', qty: '', status: 'Pending' }],
-    })
-    setShowEditor(true)
-  }
-
   const openEditEditor = (order) => {
     setEditor({ ...order, items: order.items.map((item) => ({ ...item })) })
     setShowEditor(true)
@@ -84,17 +110,9 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
     if (!cleanedItems.length) return
 
     if (editor.id) {
-      setOrders((prev) => prev.map((order) => (order.id === editor.id ? { ...editor, items: cleanedItems } : order)))
-    } else {
-      const serialNo = nextSerial(orders)
-      const payload = {
-        id: Date.now(),
-        serialNo,
-        name: editor.name.trim() || `Order-${serialNo}`,
-        date: editor.date,
-        items: cleanedItems,
-      }
-      setOrders((prev) => [...prev, payload])
+      setOrders((prev) =>
+        prev.map((order) => (order.id === editor.id ? { ...editor, items: cleanedItems } : order))
+      )
     }
 
     setShowEditor(false)
@@ -117,7 +135,7 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
             <AppButton onClick={() => setShowReport(true)}>
               <FileText size={14} /> View Report
             </AppButton>
-            <AppButton type="primary" onClick={openNewEditor}>
+            <AppButton type="primary" onClick={() => router.push('/production-order/new')}>
               <Plus size={14} /> Add Production Order
             </AppButton>
           </>
@@ -141,7 +159,11 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
             label: (
               <Checkbox
                 checked={selected.length === filtered.length && filtered.length > 0}
-                onChange={() => setSelected((prev) => (prev.length === filtered.length ? [] : filtered.map((order) => order.id)))}
+                onChange={() =>
+                  setSelected((prev) =>
+                    prev.length === filtered.length ? [] : filtered.map((order) => order.id)
+                  )
+                }
               />
             ),
           },
@@ -169,7 +191,11 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
             order.items.forEach((item, index) => {
               rows.push(
                 <tr key={`${order.id}-${item.sr}`}>
-                  <td style={ui.td}>{index === 0 ? <Checkbox checked={selected.includes(order.id)} onChange={() => toggleSelection(order.id)} /> : null}</td>
+                  <td style={ui.td}>
+                    {index === 0 ? (
+                      <Checkbox checked={selected.includes(order.id)} onChange={() => toggleSelection(order.id)} />
+                    ) : null}
+                  </td>
                   <td style={{ ...ui.td, fontWeight: index === 0 ? 700 : 400 }}>{index === 0 ? order.name : ''}</td>
                   <td style={ui.td}>{item.sr}</td>
                   <td style={ui.td}>{item.goods}</td>
@@ -233,7 +259,7 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
           <div style={ui.modal}>
             <div style={ui.modalHeaderTop}>
               <div>
-                <h3 style={ui.modalTitle}>{editor.id ? 'Edit' : 'Add'} Production Order</h3>
+                <h3 style={ui.modalTitle}>Edit Production Order</h3>
                 <p style={ui.modalSub}>Serial number is assigned automatically</p>
               </div>
               <AppButton onClick={() => setShowEditor(false)} style={ui.iconBtnOnly}>
@@ -351,7 +377,10 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
               onClick={() =>
                 setEditor((prev) => ({
                   ...prev,
-                  items: [...prev.items, { sr: prev.items.length + 1, goods: '', packing: '', qty: '', status: 'Pending' }],
+                  items: [
+                    ...prev.items,
+                    { sr: prev.items.length + 1, goods: '', packing: '', qty: '', status: 'Pending' },
+                  ],
                 }))
               }
               style={ui.addLineButton}
@@ -361,7 +390,7 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
 
             <div style={ui.modalActionsEnd}>
               <AppButton onClick={() => setShowEditor(false)}>Cancel</AppButton>
-              <AppButton type="primary" onClick={saveOrder}>{editor.id ? 'Update' : 'Save'} Order</AppButton>
+              <AppButton type="primary" onClick={saveOrder}>Update Order</AppButton>
             </div>
           </div>
         </div>
@@ -387,4 +416,3 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
     </div>
   )
 }
-

@@ -1,19 +1,19 @@
 'use client'
 
 import { useEffect } from 'react'
-import { Plus, RefreshCw, Pencil, Trash2, X, Check } from 'lucide-react'
+import { Plus, RefreshCw, Pencil, Trash2, X, Check, ChevronDown } from 'lucide-react'
 
 export const settingsTheme = {
-  primary: '#2d7a33',
-  primarySoft: '#54B45B',
-  primaryTint: '#f0f6f0',
-  pageTint: '#f8faf8',
+  primary: '#1a3d1f',
+  primarySoft: '#2d7a33',
+  primaryTint: '#e8f0e8',
+  pageTint: '#f2f4f2',
   surface: '#ffffff',
-  border: '#e2e8e2',
-  borderSoft: '#edf2ed',
+  border: '#d4dfd4',
+  borderSoft: '#e2e8e2',
   text: '#1a2e1b',
-  textMuted: '#6f8170',
-  textSubtle: '#8a9a8a',
+  textMuted: '#607062',
+  textSubtle: '#7a8a7a',
   danger: '#dc2626',
   dangerBg: '#fff5f5',
 }
@@ -113,6 +113,29 @@ export function InlineInput({ value, onChange, onSave, onCancel, placeholder }) 
   )
 }
 
+export function SettingsSelect({
+  value,
+  onChange,
+  children,
+  disabled = false,
+  wrapperStyle = {},
+  selectStyle = {},
+}) {
+  return (
+    <div style={{ ...styles.selectWrap, ...(disabled ? styles.selectWrapDisabled : {}), ...wrapperStyle }}>
+      <select
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        style={{ ...styles.select, ...selectStyle }}
+      >
+        {children}
+      </select>
+      <ChevronDown size={12} style={styles.selectChevron} />
+    </div>
+  )
+}
+
 export function SettingsPageShell({
   title,
   subtitle,
@@ -145,15 +168,11 @@ export function SettingsPageShell({
       </div>
 
       <div style={styles.filterBar}>
-        <select
-          value={filterValue}
-          onChange={(e) => onFilterChange(e.target.value)}
-          style={styles.select}
-        >
+        <SettingsSelect value={filterValue} onChange={(e) => onFilterChange(e.target.value)}>
           <option value="all">All</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
-        </select>
+        </SettingsSelect>
       </div>
 
       <div style={styles.tableWrap}>{children}</div>
@@ -299,16 +318,37 @@ const styles = {
     display: 'flex',
     gap: 10,
   },
+  selectWrap: {
+    position: 'relative',
+    display: 'inline-flex',
+    minWidth: 150,
+  },
+  selectWrapDisabled: {
+    opacity: 0.75,
+  },
   select: {
-    border: `1px solid ${settingsTheme.border}`,
-    borderRadius: 9,
-    padding: '6px 12px',
+    width: '100%',
+    appearance: 'none',
+    WebkitAppearance: 'none',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: settingsTheme.border,
+    borderRadius: 40,
+    padding: '8px 30px 8px 12px',
     fontSize: 13.5,
-    color: '#425343',
+    color: settingsTheme.text,
     background: '#fff',
     cursor: 'pointer',
     outline: 'none',
-    minWidth: 120,
+    lineHeight: 1.3,
+  },
+  selectChevron: {
+    position: 'absolute',
+    right: 12,
+    top: '50%',
+    transform: 'translateY(-50%)',
+    pointerEvents: 'none',
+    color: settingsTheme.textSubtle,
   },
   tableWrap: {
     background: '#fff',
