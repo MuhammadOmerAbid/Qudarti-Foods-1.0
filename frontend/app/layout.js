@@ -1,7 +1,7 @@
 import '@/styles/global.css'
 
 export const metadata = {
-  title: 'Qudrati Foods',
+  title: 'Qudarti Foods',
   description: 'Qudarti Foods Industrial Management System',
   icons: { icon: '/qudartinew.png' },
 }
@@ -17,7 +17,7 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
+      <body style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", zoom: 0.8 }}>
         {children}
       </body>
     </html>

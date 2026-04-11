@@ -14,7 +14,6 @@ import {
   LogOut,
   LayoutDashboard,
   BoxIcon,
-  Calculator,
   HelpCircle,
   ChevronRight,
   ChevronLeft,
@@ -23,6 +22,7 @@ import {
 const NAV_ITEMS_MENU = [
   { id: 'dashboard',         label: 'Dashboard',         icon: LayoutDashboard, path: '/dashboard' },
   { id: 'gate-inward',       label: 'Gate Inward',       icon: ArrowDownToLine, path: '/gate-inward' },
+  { id: 'gate-outward',      label: 'Gate Outward',      icon: ArrowUpFromLine, path: '/gate-outward' },
   { id: 'goods-requisition', label: 'Goods Requisition', icon: ClipboardList,   path: '/requisition' },
   { id: 'daily-production',  label: 'Daily Production',  icon: Factory,         path: '/daily-production' },
   { id: 'finished-goods',    label: 'Finished Goods',    icon: Package,         path: '/finished-goods' },
@@ -56,8 +56,6 @@ export default function AppSidebar({ collapsed, setCollapsed }) {
       style={{
         ...s.sidebar,
         width: collapsed ? 70 : 240,
-        transform: 'translateY(-50%)',
-        top: '50%',
       }}>
       <div
         style={{
@@ -81,7 +79,7 @@ export default function AppSidebar({ collapsed, setCollapsed }) {
           )}
         </button>
         {!collapsed && (
-          <span style={s.logoName}>Qudrati Foods</span>
+          <span style={s.logoName}>Qudarti Foods</span>
         )}
       </div>
 
@@ -197,7 +195,8 @@ const s = {
   sidebar: {
     position: 'fixed',
     left: '20px',
-    height: 'calc(100vh - 40px)',
+    top: '20px',
+    bottom: '20px',
     backgroundColor: '#f2f4f2',
     display: 'flex',
     flexDirection: 'column',
