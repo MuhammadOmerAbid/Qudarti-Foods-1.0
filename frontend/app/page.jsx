@@ -12,7 +12,7 @@ export default function RootPage() {
 
     if (token && user) {
       if (panel) {
-        router.replace('/dashboard')
+        router.replace(panel === 'account' ? '/accounts-dashboard' : '/dashboard')
       } else {
         router.replace('/panel-selection')
       }

@@ -52,7 +52,7 @@ export default function PanelSelectPage() {
     if (!user || !token) {
       router.replace('/auth/login')
     } else if (panel) {
-      router.replace('/dashboard')
+      router.replace(panel === 'account' ? '/accounts-dashboard' : '/dashboard')
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasHydrated, user, token, panel])
@@ -78,7 +78,7 @@ export default function PanelSelectPage() {
     // For prototype, accept any non-empty password on panel select
     if (password === 'admin123' || password === 'user123') {
       setPanel(selected)
-      router.push('/dashboard')
+      router.push(selected === 'account' ? '/accounts-dashboard' : '/dashboard')
     } else {
       setError('Wrong Password. Please verify your credentials.')
     }

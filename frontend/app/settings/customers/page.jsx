@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { useAuthStore } from '@/store/authStore'
 import { customersApi } from '@/lib/api/endpoints'
@@ -45,6 +46,7 @@ function CustomerModal({ open, onClose, onSave, initial }) {
 }
 
 export default function CustomersPage() {
+  const router = useRouter()
   const { user } = useAuthStore()
   const isSuperuser = user?.role === 'superuser'
   const canEdit = isSuperuser || user?.permissions?.includes('customers_edit')
@@ -122,7 +124,7 @@ export default function CustomersPage() {
   return (
     <DashboardLayout>
       <SettingsPageShell title="Customers" subtitle="Manage your customers"
-        onAdd={() => setModal({})} onRefresh={load}
+        onAdd={() => router.push('/settings/customers/new')} onRefresh={load}
         filterValue={filter} onFilterChange={setFilter}
         addLabel="+ Add Customer" canEdit={canEdit}>
         {loading

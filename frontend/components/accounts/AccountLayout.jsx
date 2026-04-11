@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
-import AppSidebar from '@/components/layout/Sidebar'
+import AccountSidebar from '@/components/layout/AccountSidebar'
 import { Bell, Mail, Search } from 'lucide-react'
 
-export default function DashboardLayout({ children }) {
+export default function AccountLayout({ children }) {
   const { user, token, panel, hasHydrated } = useAuthStore()
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
@@ -15,7 +15,7 @@ export default function DashboardLayout({ children }) {
     if (!hasHydrated) return
     if (!user || !token) router.replace('/auth/login')
     else if (!panel) router.replace('/panel-selection')
-    else if (panel !== 'store') router.replace('/accounts-dashboard')
+    else if (panel !== 'account') router.replace('/dashboard')
   }, [hasHydrated, user, token, panel])
 
   useEffect(() => {
@@ -41,13 +41,13 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div style={s.layout}>
-      <AppSidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+      <AccountSidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
       <main style={{ ...s.main, paddingLeft: collapsed ? 88 : 256 }}>
         <header style={s.header}>
           <div style={s.searchWrap}>
             <Search size={14} color="#6c8d6c" style={{ flexShrink: 0 }} />
-            <input style={s.searchInput} placeholder="Search task" type="text" />
+            <input style={s.searchInput} placeholder="Search accounts" type="text" />
             <kbd style={s.searchKbd}>⌘ F</kbd>
           </div>
 
@@ -55,10 +55,10 @@ export default function DashboardLayout({ children }) {
 
           <div style={s.headerRight}>
             <button style={s.iconBtn} title="Messages">
-              <Mail size={16} strokeWidth={1.5} color="#528a52" />
+              <Mail size={16} strokeWidth={1.5} color="#2d7a33" />
             </button>
             <button style={s.iconBtn} title="Notifications">
-              <Bell size={16} strokeWidth={1.5} color="#528a52" />
+              <Bell size={16} strokeWidth={1.5} color="#2d7a33" />
             </button>
 
             <div style={s.divider} />
@@ -89,11 +89,13 @@ const s = {
     fontFamily: "'Plus Jakarta Sans', 'Segoe UI', sans-serif",
   },
   main: {
-    minHeight: '100vh',
+    height: '100vh',
     display: 'flex',
     flexDirection: 'column',
     transition: 'padding-left 0.25s cubic-bezier(.4,0,.2,1)',
     background: '#ffffff',
+    overflowY: 'auto',
+    overflowX: 'hidden',
   },
   header: {
     margin: '14px 20px 0 20px',
@@ -115,7 +117,7 @@ const s = {
     alignItems: 'center',
     gap: 8,
     backgroundColor: '#ffffff',
-    border: '1px solid #dde4dd',
+    border: '1px solid #d4dfd4',
     borderRadius: '40px',
     padding: '6px 16px',
     flex: '0 1 260px',
@@ -145,14 +147,14 @@ const s = {
   divider: {
     width: 1,
     height: 30,
-    backgroundColor: '#c8d4c8',
+    backgroundColor: '#d4dfd4',
     margin: '0 6px',
   },
   iconBtn: {
     width: 38,
     height: 38,
     borderRadius: '30px',
-    border: '1px solid #cde0cd',
+    border: '1px solid #d4dfd4',
     backgroundColor: '#ffffff',
     display: 'flex',
     alignItems: 'center',
@@ -167,7 +169,7 @@ const s = {
     gap: 10,
     padding: '4px 16px 4px 4px',
     borderRadius: '40px',
-    border: '1px solid #cde0cd',
+    border: '1px solid #d4dfd4',
     backgroundColor: '#ffffff',
     cursor: 'pointer',
     transition: 'all 0.15s ease',
@@ -176,7 +178,7 @@ const s = {
     width: 36,
     height: 36,
     borderRadius: '50%',
-    background: 'linear-gradient(135deg, #1a5c22, #2d9e3a)',
+    background: 'linear-gradient(135deg, #1a3d1f, #2d7a33)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -195,3 +197,4 @@ const s = {
     backgroundColor: '#ffffff',
   },
 }
+

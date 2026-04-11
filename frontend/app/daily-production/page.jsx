@@ -18,6 +18,8 @@ const INITIAL_RECORDS = [
   { id: 6, product: 'Bottle Filling Unit', startTime: '13:00', endTime: '18:00', noOfLabour: 9,  date: '08/04/2026', note: '' },
 ]
 
+const DAILY_TABLE_COLS = ['56px', '320px', '130px', '130px', '140px', '130px', '130px']
+
 function parseDMY(str) {
   const [d, m, y] = str.split('/')
   return new Date(`${y}-${m}-${d}`)
@@ -125,6 +127,11 @@ export default function DailyProductionPage() {
 
           {/* Global table header */}
           <table style={s.table}>
+            <colgroup>
+              {DAILY_TABLE_COLS.map((width, idx) => (
+                <col key={`head-col-${idx}`} style={{ width }} />
+              ))}
+            </colgroup>
             <thead>
               <tr style={s.thead}>
                 <th style={{ ...s.th, width: 40 }}>
@@ -174,6 +181,11 @@ export default function DailyProductionPage() {
                 {/* Rows */}
                 {!isCollapsed && (
                   <table style={{ ...s.table, borderTop: 'none' }}>
+                    <colgroup>
+                      {DAILY_TABLE_COLS.map((width, idx) => (
+                        <col key={`${date}-col-${idx}`} style={{ width }} />
+                      ))}
+                    </colgroup>
                     <tbody>
                       {dateRecords.map(r => (
                         <tr key={r.id}
@@ -370,7 +382,7 @@ const s = {
     overflowX: 'auto',
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
   },
-  table: { width: '100%', minWidth: 980, borderCollapse: 'collapse' },
+  table: { width: '100%', minWidth: 1036, borderCollapse: 'collapse', tableLayout: 'fixed' },
   thead: { background: '#e8eee8' },
   th: { padding: '12px 14px', fontSize: 12, fontWeight: 700, color: '#29472d', textAlign: 'left', borderBottom: '1px solid #d4dfd4', whiteSpace: 'nowrap', letterSpacing: '0.1px' },
   tr: { transition: 'background 0.15s' },

@@ -168,7 +168,7 @@ export default function RecipePage() {
                 </button>
 
                 {canEdit ? (
-                  <button onClick={() => router.push('/settings/recipe/new')} style={primaryBtn} type="button">
+                  <button onClick={() => router.push('/settings/recipe/new')} style={addBtn} type="button">
                     <Plus size={15} /> Add Recipe
                   </button>
                 ) : null}
@@ -400,4 +400,18 @@ const primaryBtn = {
   display: 'flex',
   alignItems: 'center',
   gap: 6,
+}
+
+const addBtn = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '11px 20px',
+  borderRadius: 40,
+  border: 'none',
+  background: 'linear-gradient(90deg, #1B5E20 0%, #2E7D32 45%, #4CAF50 100%)',
+  color: '#fff',
+  fontSize: 13.5,
+  fontWeight: 600,
+  cursor: 'pointer',
 }

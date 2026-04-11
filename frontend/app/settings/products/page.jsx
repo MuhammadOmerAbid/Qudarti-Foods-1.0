@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { useAuthStore } from '@/store/authStore'
 import { productsApi, brandsApi, categoriesApi } from '@/lib/api/endpoints'
@@ -73,6 +74,7 @@ function ProductModal({ open, onClose, onSave, brands, categories, initial }) {
 }
 
 export default function ProductsPage() {
+  const router = useRouter()
   const { user } = useAuthStore()
   const isSuperuser = user?.role === 'superuser'
   const canEdit = isSuperuser || user?.permissions?.includes('products_edit')
@@ -194,7 +196,7 @@ export default function ProductsPage() {
               <RefreshCw size={16} color={settingsTheme.textMuted} />
             </button>
             {canEdit && (
-              <button onClick={() => setModal({})} style={primaryBtn} type="button">
+              <button onClick={() => router.push('/settings/products/new')} style={addBtn} type="button">
                 <Plus size={15} /> Add Product
               </button>
             )}
@@ -306,6 +308,20 @@ const primaryBtn = {
   padding: '8px 16px',
   fontSize: 13.5,
   fontWeight: 700,
+  cursor: 'pointer',
+}
+
+const addBtn = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '11px 20px',
+  borderRadius: 40,
+  border: 'none',
+  background: 'linear-gradient(90deg, #1B5E20 0%, #2E7D32 45%, #4CAF50 100%)',
+  color: '#fff',
+  fontSize: 13.5,
+  fontWeight: 600,
   cursor: 'pointer',
 }
 

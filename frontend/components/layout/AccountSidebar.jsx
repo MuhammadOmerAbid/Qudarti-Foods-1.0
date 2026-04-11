@@ -4,45 +4,49 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { useState } from 'react'
 import {
-  ArrowDownToLine,
-  ArrowUpFromLine,
-  ClipboardList,
-  Factory,
-  Package,
-  Warehouse,
+  LayoutDashboard,
+  BookOpen,
+  FileText,
+  Users,
+  UserCheck,
+  Banknote,
+  Receipt,
+  BarChart3,
+  Stamp,
   Settings,
   LogOut,
-  LayoutDashboard,
-  BoxIcon,
   ChevronRight,
   ChevronLeft,
 } from 'lucide-react'
 
 const NAV_ITEMS_MENU = [
-  { id: 'dashboard',         label: 'Dashboard',         icon: LayoutDashboard, path: '/dashboard' },
-  { id: 'gate-inward',       label: 'Gate Inward',       icon: ArrowDownToLine, path: '/gate-inward' },
-  { id: 'gate-outward',      label: 'Gate Outward',      icon: ArrowUpFromLine, path: '/gate-outward' },
-  { id: 'goods-requisition', label: 'Goods Requisition', icon: ClipboardList,   path: '/requisition' },
-  { id: 'daily-production',  label: 'Daily Production',  icon: Factory,         path: '/daily-production' },
-  { id: 'finished-goods',    label: 'Finished Goods',    icon: Package,         path: '/finished-goods' },
-  { id: 'production-order',  label: 'Production Order',  icon: BoxIcon,         path: '/production-order' },
-  { id: 'inventory',         label: 'Inventory',         icon: Warehouse,       path: '/inventory' },
+  { id: 'accounts-dashboard',      label: 'Dashboard',           icon: LayoutDashboard, path: '/accounts-dashboard' },
+  { id: 'chart-of-accounts',       label: 'Chart of Accounts',   icon: BookOpen,        path: '/accounts/chart-of-accounts' },
+  { id: 'general-ledger',          label: 'General Ledger',      icon: FileText,        path: '/accounts/general-ledger' },
+  { id: 'accounts-payable',        label: 'Accounts Payable',    icon: Users,           path: '/accounts/payable' },
+  { id: 'accounts-receivable',     label: 'Accounts Receivable', icon: UserCheck,       path: '/accounts/receivable' },
+  { id: 'cash-bank',               label: 'Cash & Bank',         icon: Banknote,        path: '/accounts/cash-bank' },
+  { id: 'expenses',                label: 'Expenses',            icon: Receipt,         path: '/accounts/expenses' },
+  { id: 'reports',                 label: 'Financial Reports',   icon: BarChart3,       path: '/accounts/reports' },
+  { id: 'vouchers',                label: 'Vouchers',            icon: Stamp,           path: '/accounts/vouchers' },
 ]
 
 const NAV_ITEMS_GENERAL = [
-  { id: 'settings',         label: 'Settings', icon: Settings,   path: '/settings' },
-  { id: 'logout',           label: 'Logout',   icon: LogOut,     path: null, isLogout: true },
+  { id: 'accounts-settings', label: 'Settings', icon: Settings,   path: '/accounts/settings' },
+  { id: 'logout',            label: 'Logout',   icon: LogOut,     path: null, isLogout: true },
 ]
 
-export default function AppSidebar({ collapsed, setCollapsed }) {
+export default function AccountSidebar({ collapsed, setCollapsed }) {
   const { user, logout } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
   const [logoHover, setLogoHover] = useState(false)
 
+  const isSuperuser = user?.role === 'superuser'
+
   const visibleMenuItems = NAV_ITEMS_MENU.filter(item => {
-    if (item.id === 'dashboard') return true
-    if (user?.role === 'superuser') return true
+    if (item.id === 'accounts-dashboard') return true
+    if (isSuperuser) return true
     return user?.permissions?.includes(item.id)
   })
 
@@ -77,7 +81,7 @@ export default function AppSidebar({ collapsed, setCollapsed }) {
           )}
         </button>
         {!collapsed && (
-          <span style={s.logoName}>Qudarti Foods</span>
+          <span style={s.logoName}>Accounts</span>
         )}
       </div>
 
@@ -89,7 +93,7 @@ export default function AppSidebar({ collapsed, setCollapsed }) {
           return (
             <div key={item.id} style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: collapsed ? 'center' : 'flex-start' }}>
               {active && !collapsed && <div style={s.activeMarker} />}
-              
+
               <button
                 onClick={() => handleNavigation(item.path)}
                 title={collapsed ? item.label : undefined}
@@ -100,7 +104,6 @@ export default function AppSidebar({ collapsed, setCollapsed }) {
                   width: collapsed ? 48 : '100%',
                   borderRadius: '999px',
                 }}
-                className="nav-item-button"
                 onMouseEnter={(e) => {
                   if (!active && !collapsed) {
                     e.currentTarget.style.backgroundColor = '#e8eee8'
@@ -121,9 +124,9 @@ export default function AppSidebar({ collapsed, setCollapsed }) {
                     color={active ? '#2d7a33' : '#7a8a7a'}
                   />
                 </div>
-                
+
                 {!collapsed && (
-                  <span style={{ ...s.navLabel, color: active ? '#2d7a33' : '#5a6a5a', fontWeight: active ? 600 : 500 }}>
+                  <span style={{ ...s.navLabel, color: active ? '#2d7a33' : '#415443', fontWeight: active ? 600 : 500 }}>
                     {item.label}
                   </span>
                 )}
@@ -143,7 +146,7 @@ export default function AppSidebar({ collapsed, setCollapsed }) {
           return (
             <div key={item.id} style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: collapsed ? 'center' : 'flex-start' }}>
               {active && !collapsed && <div style={s.activeMarker} />}
-              
+
               <button
                 onClick={() => isLogout ? handleLogout() : handleNavigation(item.path)}
                 title={collapsed ? item.label : undefined}
@@ -154,7 +157,6 @@ export default function AppSidebar({ collapsed, setCollapsed }) {
                   width: collapsed ? 48 : '100%',
                   borderRadius: '999px',
                 }}
-                className="nav-item-button"
                 onMouseEnter={(e) => {
                   if (!isLogout && !collapsed) {
                     e.currentTarget.style.backgroundColor = '#e8eee8'
@@ -176,7 +178,7 @@ export default function AppSidebar({ collapsed, setCollapsed }) {
                   />
                 </div>
                 {!collapsed && (
-                  <span style={{ ...s.navLabel, color: isLogout ? '#ef4444' : (active ? '#2d7a33' : '#5a6a5a') }}>
+                  <span style={{ ...s.navLabel, color: isLogout ? '#ef4444' : (active ? '#2d7a33' : '#415443') }}>
                     {item.label}
                   </span>
                 )}
@@ -195,18 +197,18 @@ const s = {
     left: '20px',
     top: '20px',
     bottom: '20px',
-    backgroundColor: '#f2f4f2',
+    backgroundColor: '#e8eee8',
     display: 'flex',
     flexDirection: 'column',
     zIndex: 50,
-    overflowY: 'hidden',
+    overflowY: 'auto',
     overflowX: 'hidden',
+    scrollbarGutter: 'stable',
     transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     borderRadius: '28px',
     boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.08), 0 4px 12px -4px rgba(0, 0, 0, 0.02)',
-    border: '1px solid #e2e8e2',
+    border: '1px solid #d4dfd4',
   },
-
   logoRow: {
     display: 'flex',
     alignItems: 'center',
@@ -219,7 +221,7 @@ const s = {
     height: 32,
     border: 'none',
     borderRadius: '999px',
-    backgroundColor: '#e8eee8',
+    backgroundColor: '#d4dfd4',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -240,23 +242,20 @@ const s = {
     letterSpacing: '-0.5px',
     flex: 1,
   },
-
   sectionLabel: {
     fontSize: 11,
     fontWeight: 700,
     letterSpacing: '1.5px',
-    color: '#9aaa9a',
+    color: '#8aa88a',
     padding: '8px 20px 4px',
     margin: 0,
   },
-
   nav: {
     display: 'flex',
     flexDirection: 'column',
     gap: 4,
     padding: '4px 12px',
   },
-
   navItem: {
     display: 'flex',
     alignItems: 'center',
@@ -266,7 +265,7 @@ const s = {
     border: 'none',
     cursor: 'pointer',
     background: 'transparent',
-    color: '#5a6a5a',
+    color: '#415443',
     whiteSpace: 'nowrap',
     textAlign: 'left',
     position: 'relative',
@@ -282,11 +281,10 @@ const s = {
     justifyContent: 'center',
     flexShrink: 0,
   },
-  navLabel: { 
-    flex: 1, 
+  navLabel: {
+    flex: 1,
     fontSize: 14,
   },
-
   activeMarker: {
     position: 'absolute',
     left: -12,
@@ -296,6 +294,7 @@ const s = {
     height: 28,
     backgroundColor: '#2d7a33',
     borderRadius: '0 4px 4px 0',
-    boxShadow: '0 2px 4px rgba(45, 122, 51, 0.15)',
+    boxShadow: '0 2px 4px rgba(37, 99, 235, 0.15)',
   },
-} 
+}
+
