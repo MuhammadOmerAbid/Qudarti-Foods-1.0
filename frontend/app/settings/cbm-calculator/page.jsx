@@ -192,7 +192,7 @@ export default function CBMCalculatorPage() {
         </div>
 
         <div style={{ display: 'flex', gap: 10, marginBottom: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <button onClick={addRow} style={primaryBtn} type="button">
+          <button onClick={addRow} style={addBtn} type="button">
             <Plus size={14} /> Add Row
           </button>
           <button onClick={loadSample} style={outlineBtn} type="button">
@@ -436,6 +436,20 @@ const primaryBtn = {
   padding: '8px 14px',
   fontSize: 13,
   fontWeight: 700,
+  cursor: 'pointer',
+}
+
+const addBtn = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '11px 20px',
+  borderRadius: 40,
+  border: 'none',
+  background: 'linear-gradient(90deg, #1B5E20 0%, #2E7D32 45%, #4CAF50 100%)',
+  color: '#fff',
+  fontSize: 13.5,
+  fontWeight: 600,
   cursor: 'pointer',
 }
 

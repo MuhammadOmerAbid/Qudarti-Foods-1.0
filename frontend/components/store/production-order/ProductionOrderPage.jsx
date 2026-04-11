@@ -102,6 +102,10 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
     setShowEditor(true)
   }
 
+  const openNewEditor = () => {
+    router.push('/production-order/new')
+  }
+
   const saveOrder = () => {
     const cleanedItems = editor.items
       .map((item, idx) => ({ ...item, sr: idx + 1, qty: Number(item.qty) || 0 }))
