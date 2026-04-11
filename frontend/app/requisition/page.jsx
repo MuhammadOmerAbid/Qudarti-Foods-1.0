@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
@@ -498,7 +498,7 @@ const s = {
     padding: '11px 20px',
     borderRadius: '40px',
     border: 'none',
-    backgroundColor: '#1a3d1f',
+    background: 'linear-gradient(90deg, #1B5E20 0%, #2E7D32 45%, #4CAF50 100%)',
     color: '#fff',
     fontSize: 13.5,
     fontWeight: 600,
@@ -635,3 +635,5 @@ const s = {
   cancelBtn: { background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 40, padding: '9px 20px', fontSize: 13.5, fontWeight: 600, color: '#374151', cursor: 'pointer' },
   confirmReturnBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#ea580c', border: 'none', borderRadius: 40, padding: '9px 20px', fontSize: 13.5, fontWeight: 600, color: '#fff', cursor: 'pointer' },
 }
+
+

@@ -86,7 +86,14 @@ export default function FinishedGoodsPage({ isSuperUser = true }) {
             <AppButton onClick={() => setShowReport(true)}>
               <FileText size={14} /> View Report
             </AppButton>
-            <AppButton type="primary" onClick={() => router.push('/finished-goods/new')}>
+            <AppButton
+              type="primary"
+              style={{ background: 'linear-gradient(90deg, #1B5E20 0%, #2E7D32 45%, #4CAF50 100%)', border: 'none', color: '#fff' }}
+              onClick={() => {
+                resetDraft()
+                setShowEditor(true)
+              }}
+            >
               <Plus size={14} /> Add Entry
             </AppButton>
           </>
