@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/authStore'
 import { productsApi, brandsApi, categoriesApi } from '@/lib/api/endpoints'
 import {
   SettingsTable,
+  SettingsSelect,
   Toggle,
   ActionButtons,
   ConfirmDelete,
@@ -46,18 +47,18 @@ function ProductModal({ open, onClose, onSave, brands, categories, initial }) {
 
         <div style={{ marginBottom: 14 }}>
           <label style={labelStyle}>Brand</label>
-          <select value={form.brand} onChange={(e) => set('brand', e.target.value)} style={inputStyle}>
+          <SettingsSelect value={form.brand} onChange={(e) => set('brand', e.target.value)} wrapperStyle={{ width: '100%' }} selectStyle={selectInputStyle}>
             <option value="">Select Brand</option>
             {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-          </select>
+          </SettingsSelect>
         </div>
 
         <div style={{ marginBottom: 20 }}>
           <label style={labelStyle}>Category</label>
-          <select value={form.category} onChange={(e) => set('category', e.target.value)} style={inputStyle}>
+          <SettingsSelect value={form.category} onChange={(e) => set('category', e.target.value)} wrapperStyle={{ width: '100%' }} selectStyle={selectInputStyle}>
             <option value="">Select Category</option>
             {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          </SettingsSelect>
         </div>
 
         <div style={modalActions}>
@@ -201,19 +202,19 @@ export default function ProductsPage() {
         </div>
 
         <div style={filters}>
-          <select value={filter} onChange={(e) => setFilter(e.target.value)} style={selectStyle}>
+          <SettingsSelect value={filter} onChange={(e) => setFilter(e.target.value)} wrapperStyle={{ minWidth: 140 }} selectStyle={selectStyle}>
             <option value="all">All</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
-          </select>
-          <select value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} style={selectStyle}>
+          </SettingsSelect>
+          <SettingsSelect value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} wrapperStyle={{ minWidth: 170 }} selectStyle={selectStyle}>
             <option value="">All Brands</option>
             {brands.map((b) => <option key={b.id} value={String(b.id)}>{b.name}</option>)}
-          </select>
-          <select value={catFilter} onChange={(e) => setCatFilter(e.target.value)} style={selectStyle}>
+          </SettingsSelect>
+          <SettingsSelect value={catFilter} onChange={(e) => setCatFilter(e.target.value)} wrapperStyle={{ minWidth: 180 }} selectStyle={selectStyle}>
             <option value="">All Categories</option>
             {categories.map((c) => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
-          </select>
+          </SettingsSelect>
         </div>
 
         <div style={tableShell}>
@@ -327,15 +328,13 @@ const filters = {
 }
 
 const selectStyle = {
-  border: `1px solid ${settingsTheme.border}`,
-  borderRadius: 9,
-  padding: '6px 12px',
+  borderRadius: 40,
+  padding: '8px 30px 8px 12px',
   fontSize: 13.5,
-  color: '#425343',
+  color: settingsTheme.text,
   background: '#fff',
   cursor: 'pointer',
   outline: 'none',
-  minWidth: 140,
 }
 
 const tableShell = {
@@ -394,13 +393,20 @@ const labelStyle = {
 
 const inputStyle = {
   width: '100%',
-  border: `1px solid ${settingsTheme.border}`,
+  borderWidth: '1px',
+  borderStyle: 'solid',
+  borderColor: settingsTheme.border,
   borderRadius: 10,
   padding: '8px 12px',
   fontSize: 13.5,
   color: settingsTheme.text,
   outline: 'none',
   boxSizing: 'border-box',
+}
+
+const selectInputStyle = {
+  borderRadius: 10,
+  padding: '8px 30px 8px 12px',
 }
 
 const modalActions = {

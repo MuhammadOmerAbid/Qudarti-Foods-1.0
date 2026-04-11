@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
-import { Factory, ArrowLeft, Save, Plus, X } from 'lucide-react'
+import { ArrowLeft, Save, Plus, X } from 'lucide-react'
 
 const todayISO = () => new Date().toISOString().split('T')[0]
 
@@ -76,7 +76,7 @@ export default function DailyProductionNewPage() {
               <ArrowLeft size={16} />
             </button>
             <div>
-              <h1 style={s.pageTitle}><Factory size={20} color="#f59e0b" style={{ marginRight: 8 }} />Add Production Entry</h1>
+              <h1 style={s.pageTitle}>Add Production Entry</h1>
               <p style={s.pageSubtitle}>Record daily production activity</p>
             </div>
           </div>
@@ -212,42 +212,43 @@ export default function DailyProductionNewPage() {
 
 const s = {
   wrapper: { maxWidth: 860, margin: '0 auto' },
-  pageHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  pageHeader: { display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' },
   headerLeft: { display: 'flex', alignItems: 'center', gap: 12 },
-  backBtn: { background: '#f3f4f6', border: 'none', borderRadius: 8, padding: '8px 10px', cursor: 'pointer', color: '#6b7280', display: 'flex' },
-  pageTitle: { fontSize: 22, fontWeight: 800, color: '#1a2e1b', margin: '0 0 2px', display: 'flex', alignItems: 'center' },
-  pageSubtitle: { fontSize: 13, color: '#9ca3af', margin: 0 },
-  saveBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#54B45B', border: 'none', borderRadius: 8, padding: '9px 28px', fontSize: 13.5, fontWeight: 700, color: '#fff', cursor: 'pointer', letterSpacing: '0.5px' },
-  saveBtnDis: { display: 'flex', alignItems: 'center', gap: 6, background: '#a7f3d0', border: 'none', borderRadius: 8, padding: '9px 28px', fontSize: 13.5, fontWeight: 700, color: '#fff', cursor: 'not-allowed' },
-  cancelBtn: { background: '#f3f4f6', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13.5, fontWeight: 600, color: '#374151', cursor: 'pointer' },
-
-  card: { background: '#fff', borderRadius: 14, border: '1px solid #e8f5e9', padding: 28, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
-
-  dateRow: { marginBottom: 20, maxWidth: 280 },
+  backBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 40,
+    border: '1.5px solid #d4dfd4',
+    background: '#ffffff',
+    color: '#2d7a33',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+  },
+  pageTitle: { fontSize: 30, fontWeight: 800, color: '#1a3d1f', margin: '0 0 4px', display: 'flex', alignItems: 'center', letterSpacing: '-0.6px', lineHeight: 1.2 },
+  pageSubtitle: { fontSize: 13.5, color: '#7a8a7a', margin: 0, fontWeight: 500 },
+  saveBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, background: '#1a3d1f', border: 'none', borderRadius: 40, padding: '11px 20px', fontSize: 13.5, fontWeight: 700, color: '#fff', cursor: 'pointer' },
+  saveBtnDis: { display: 'inline-flex', alignItems: 'center', gap: 6, background: '#9eb7a1', border: 'none', borderRadius: 40, padding: '11px 20px', fontSize: 13.5, fontWeight: 700, color: '#fff', cursor: 'not-allowed' },
+  cancelBtn: { border: '1.5px solid #d4dfd4', borderRadius: 40, padding: '11px 20px', fontSize: 13.5, fontWeight: 600, color: '#2d7a33', background: '#ffffff', cursor: 'pointer' },
+  card: { background: '#f2f4f2', borderRadius: 20, border: '1px solid #e2e8e2', padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
+  dateRow: { marginBottom: 18, maxWidth: 280 },
   fieldGroup: { display: 'flex', flexDirection: 'column', gap: 6 },
-  label: { fontSize: 13, fontWeight: 600, color: '#374151' },
-  input: { background: '#f0faf4', border: '1px solid #d1fae5', borderRadius: 8, padding: '9px 12px', fontSize: 13.5, color: '#1a2e1b', outline: 'none', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit' },
-
-  errBanner: { background: '#fff5f5', border: '1px solid #fecaca', borderRadius: 8, padding: '9px 14px', fontSize: 13, color: '#ef4444', marginBottom: 14 },
-
-  entriesHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
-  entriesTitle: { fontSize: 14, fontWeight: 700, color: '#374151', margin: 0 },
-  addEntryBtn: { display: 'flex', alignItems: 'center', gap: 5, background: '#f0fdf4', border: '1px solid #86efac', color: '#2d7a33', borderRadius: 7, padding: '6px 14px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' },
-
-  entryBlock: { position: 'relative', background: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: 12, padding: '18px 20px 16px', marginBottom: 12 },
-  entryTag: { position: 'absolute', top: -10, left: 16, background: '#f59e0b', color: '#fff', fontSize: 11, fontWeight: 700, borderRadius: 20, padding: '2px 10px' },
+  label: { fontSize: 12, fontWeight: 700, color: '#607062' },
+  input: { background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 10, padding: '9px 12px', fontSize: 13, color: '#1f2f21', outline: 'none', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit' },
+  errBanner: { background: '#fff1f2', border: '1px solid #fecaca', borderRadius: 10, padding: '9px 12px', fontSize: 12.5, color: '#b91c1c', marginBottom: 12 },
+  entriesHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, gap: 8, flexWrap: 'wrap' },
+  entriesTitle: { fontSize: 14, fontWeight: 700, color: '#1f2f21', margin: 0 },
+  addEntryBtn: { display: 'flex', alignItems: 'center', gap: 5, background: '#ffffff', border: '1.5px solid #d4dfd4', color: '#2d7a33', borderRadius: 40, padding: '7px 14px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' },
+  entryBlock: { position: 'relative', background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 12, padding: '18px 20px 16px', marginBottom: 10 },
+  entryTag: { position: 'absolute', top: -10, left: 16, background: '#2d7a33', color: '#fff', fontSize: 11, fontWeight: 700, borderRadius: 20, padding: '2px 10px' },
   entryFields: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 16px' },
-
   hoursDisplay: { height: 40, display: 'flex', alignItems: 'center' },
-  hoursBadge: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 6, padding: '4px 12px', fontSize: 13, fontWeight: 700, color: '#d97706' },
-  hoursPlaceholder: { fontSize: 12.5, color: '#d1d5db', fontStyle: 'italic' },
-
-  removeEntryBtn: { position: 'absolute', top: 12, right: 12, background: '#fff5f5', border: '1px solid #fecaca', color: '#ef4444', borderRadius: 6, padding: '5px 7px', cursor: 'pointer', display: 'flex' },
-
-  addEntryDashed: { display: 'flex', alignItems: 'center', gap: 6, background: '#fafafa', border: '1px dashed #d1d5db', color: '#9ca3af', borderRadius: 8, padding: '9px 16px', fontSize: 13, fontWeight: 500, cursor: 'pointer', width: '100%', justifyContent: 'center', marginBottom: 20 },
-
+  hoursBadge: { background: '#e8f0e8', border: '1px solid #d4dfd4', borderRadius: 40, padding: '2px 10px', fontSize: 12.5, fontWeight: 700, color: '#2d7a33' },
+  hoursPlaceholder: { fontSize: 12.5, color: '#b2c0b3', fontStyle: 'italic' },
+  removeEntryBtn: { position: 'absolute', top: 12, right: 12, background: '#fff1f2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 8, padding: '5px 7px', cursor: 'pointer', display: 'flex' },
+  addEntryDashed: { display: 'flex', alignItems: 'center', gap: 6, background: '#ffffff', border: '1.5px dashed #d4dfd4', color: '#2d7a33', borderRadius: 10, padding: '9px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', width: '100%', justifyContent: 'center', marginBottom: 18 },
   noteSection: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 4 },
-  noteInput: { background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: '10px 12px', fontSize: 13.5, color: '#1a2e1b', outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', lineHeight: 1.6 },
-
-  formFooter: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 24, paddingTop: 20, borderTop: '1px solid #f3f4f6' },
+  noteInput: { background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 10, padding: '10px 12px', fontSize: 13, color: '#1f2f21', outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', lineHeight: 1.6 },
+  formFooter: { display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20, paddingTop: 16, borderTop: '1px solid #d4dfd4', flexWrap: 'wrap' },
 }

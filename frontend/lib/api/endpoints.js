@@ -138,6 +138,7 @@ export const finishedGoodsApi = {
 // ── Recipes ──────────────────────────────────────────────────
 export const recipesApi = {
   list: () => get('/recipes/'),
+  get: (id) => get(`/recipes/${id}/`),
   create: (data) => post('/recipes/', data),
   update: (id, data) => patch(`/recipes/${id}/`, data),
   delete: (id) => del(`/recipes/${id}/`),

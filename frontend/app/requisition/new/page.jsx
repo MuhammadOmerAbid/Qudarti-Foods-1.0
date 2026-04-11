@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
-import { ClipboardList, ArrowLeft, Save, Plus, X, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Save, Plus, X, ChevronDown } from 'lucide-react'
 
 /* ─── Mock Data — replace with real API calls ─── */
 const PRODUCTS = [
@@ -69,10 +69,7 @@ export default function RequisitionNewPage() {
               <ArrowLeft size={16} />
             </button>
             <div>
-              <h1 style={s.pageTitle}>
-                <ClipboardList size={20} color="#3b82f6" style={{ marginRight: 8 }} />
-                Add Goods Requisition
-              </h1>
+              <h1 style={s.pageTitle}>Add Goods Requisition</h1>
               <p style={s.pageSubtitle}>Create a new goods requisition entry</p>
             </div>
           </div>
@@ -260,65 +257,74 @@ export default function RequisitionNewPage() {
 
 const s = {
   wrapper: { maxWidth: 960, margin: '0 auto' },
-
-  pageHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  pageHeader: { display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' },
   headerLeft: { display: 'flex', alignItems: 'center', gap: 12 },
-  backBtn: { background: '#f3f4f6', border: 'none', borderRadius: 8, padding: '8px 10px', cursor: 'pointer', color: '#6b7280', display: 'flex' },
-  pageTitle: { fontSize: 22, fontWeight: 800, color: '#1a2e1b', margin: '0 0 2px', display: 'flex', alignItems: 'center' },
-  pageSubtitle: { fontSize: 13, color: '#9ca3af', margin: 0 },
-
-  saveBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#54B45B', border: 'none', borderRadius: 8, padding: '9px 28px', fontSize: 13.5, fontWeight: 700, color: '#fff', cursor: 'pointer', letterSpacing: '0.5px' },
-  saveBtnDis: { display: 'flex', alignItems: 'center', gap: 6, background: '#a7f3d0', border: 'none', borderRadius: 8, padding: '9px 28px', fontSize: 13.5, fontWeight: 700, color: '#fff', cursor: 'not-allowed' },
-  cancelBtn: { background: '#f3f4f6', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13.5, fontWeight: 600, color: '#374151', cursor: 'pointer' },
-
-  card: { background: '#fff', borderRadius: 14, border: '1px solid #e8f5e9', padding: 28, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
-
-  topRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 },
+  backBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 40,
+    border: '1.5px solid #d4dfd4',
+    background: '#ffffff',
+    color: '#2d7a33',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+  },
+  pageTitle: { fontSize: 30, fontWeight: 800, color: '#1a3d1f', margin: '0 0 4px', display: 'flex', alignItems: 'center', letterSpacing: '-0.6px', lineHeight: 1.2 },
+  pageSubtitle: { fontSize: 13.5, color: '#7a8a7a', margin: 0, fontWeight: 500 },
+  saveBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, background: '#1a3d1f', border: 'none', borderRadius: 40, padding: '11px 20px', fontSize: 13.5, fontWeight: 700, color: '#fff', cursor: 'pointer' },
+  saveBtnDis: { display: 'inline-flex', alignItems: 'center', gap: 6, background: '#9eb7a1', border: 'none', borderRadius: 40, padding: '11px 20px', fontSize: 13.5, fontWeight: 700, color: '#fff', cursor: 'not-allowed' },
+  cancelBtn: { border: '1.5px solid #d4dfd4', borderRadius: 40, padding: '11px 20px', fontSize: 13.5, fontWeight: 600, color: '#2d7a33', background: '#ffffff', cursor: 'pointer' },
+  card: { background: '#f2f4f2', borderRadius: 20, border: '1px solid #e2e8e2', padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
+  topRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 },
   fieldGroup: { display: 'flex', flexDirection: 'column', gap: 6 },
   sectionHeader: { marginBottom: 8 },
-
-  label: { fontSize: 13, fontWeight: 600, color: '#374151' },
-  subLabel: { fontSize: 11.5, fontWeight: 600, color: '#9ca3af', display: 'block' },
-
-  input: { background: '#f0faf4', border: '1px solid #d1fae5', borderRadius: 8, padding: '9px 12px', fontSize: 13.5, color: '#1a2e1b', outline: 'none', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit' },
-  inputError: { borderColor: '#fca5a5', background: '#fff5f5' },
-  errorText: { fontSize: 11.5, color: '#ef4444', marginTop: 2 },
-
-  itemsError: { background: '#fff5f5', border: '1px solid #fecaca', borderRadius: 8, padding: '8px 14px', fontSize: 13, color: '#ef4444', marginBottom: 12 },
-
-  colHeaderRow: { display: 'flex', gap: 10, marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid #f3f4f6' },
+  label: { fontSize: 12, fontWeight: 700, color: '#607062' },
+  subLabel: { fontSize: 11.5, fontWeight: 600, color: '#7a8a7a', display: 'block' },
+  input: {
+    background: '#ffffff',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: '#d4dfd4',
+    borderRadius: 10,
+    padding: '9px 12px',
+    fontSize: 13,
+    color: '#1f2f21',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
+    fontFamily: 'inherit',
+  },
+  inputError: { borderColor: '#fca5a5', background: '#fff1f2' },
+  errorText: { fontSize: 12, color: '#b91c1c', marginTop: 2 },
+  itemsError: { background: '#fff1f2', border: '1px solid #fecaca', borderRadius: 10, padding: '8px 12px', fontSize: 12.5, color: '#b91c1c', marginBottom: 12 },
+  colHeaderRow: { display: 'flex', gap: 10, marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid #d4dfd4' },
   productRow: { display: 'flex', gap: 10, marginBottom: 10, alignItems: 'center' },
   itemField: { display: 'flex', flexDirection: 'column', flex: 1 },
-
   selectWrap: { position: 'relative' },
-  select: { appearance: 'none', WebkitAppearance: 'none', background: '#f0faf4', border: '1px solid #d1fae5', borderRadius: 8, padding: '9px 30px 9px 12px', fontSize: 13.5, color: '#1a2e1b', outline: 'none', width: '100%', cursor: 'pointer', fontFamily: 'inherit' },
-  chevron: { position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#9ca3af' },
-
+  select: { appearance: 'none', WebkitAppearance: 'none', background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 10, padding: '9px 30px 9px 12px', fontSize: 13, color: '#1f2f21', outline: 'none', width: '100%', cursor: 'pointer', fontFamily: 'inherit' },
+  chevron: { position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#7a8a7a' },
   typeDisplay: { display: 'flex', alignItems: 'center', height: 40, paddingLeft: 4 },
-  subCatBadge: { display: 'inline-block', background: '#f0f9ff', border: '1px solid #bae6fd', color: '#0284c7', borderRadius: 6, padding: '3px 10px', fontSize: 12, fontWeight: 600 },
-  catBadge: { display: 'inline-block', background: '#f5f3ff', border: '1px solid #ddd6fe', color: '#7c3aed', borderRadius: 6, padding: '3px 10px', fontSize: 12, fontWeight: 600 },
-  typePlaceholder: { color: '#d1d5db', fontSize: 13 },
-  unitDisplay: { height: 40, display: 'flex', alignItems: 'center', fontSize: 13, color: '#6b7280', fontWeight: 500, paddingLeft: 4 },
-
-  removeBtn: { background: '#fff5f5', border: '1px solid #fecaca', color: '#ef4444', borderRadius: 6, padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 38 },
-
-  selectedSection: { background: '#f9fafb', borderRadius: 10, border: '1px solid #f3f4f6', padding: '14px 16px', margin: '18px 0 12px' },
-  selectedTitle: { fontSize: 13, fontWeight: 700, color: '#374151', margin: '0 0 10px' },
-  noSelected: { fontSize: 13, color: '#9ca3af', margin: 0 },
+  subCatBadge: { display: 'inline-block', background: '#eef2ee', border: '1px solid #d4dfd4', color: '#2d7a33', borderRadius: 40, padding: '2px 9px', fontSize: 11.5, fontWeight: 700 },
+  catBadge: { display: 'inline-block', background: '#e8f0e8', border: '1px solid #d4dfd4', color: '#1f7a2b', borderRadius: 40, padding: '2px 9px', fontSize: 11.5, fontWeight: 700 },
+  typePlaceholder: { color: '#b2c0b3', fontSize: 13 },
+  unitDisplay: { height: 40, display: 'flex', alignItems: 'center', fontSize: 12.5, color: '#607062', fontWeight: 600, paddingLeft: 4 },
+  removeBtn: { background: '#fff1f2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 8, padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 38 },
+  selectedSection: { background: '#ffffff', borderRadius: 12, border: '1px solid #d4dfd4', padding: '14px 16px', margin: '18px 0 12px' },
+  selectedTitle: { fontSize: 13, fontWeight: 700, color: '#1f2f21', margin: '0 0 10px' },
+  noSelected: { fontSize: 13, color: '#7a8a7a', margin: 0 },
   selectedList: { display: 'flex', flexWrap: 'wrap', gap: 8 },
-  selectedChip: { display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '5px 12px' },
-  chipName: { fontSize: 13, fontWeight: 600, color: '#1a2e1b' },
-  chipSubCat: { fontSize: 11, color: '#0284c7', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 4, padding: '1px 6px', fontWeight: 600 },
-  chipCat: { fontSize: 11, color: '#7c3aed', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 4, padding: '1px 6px', fontWeight: 600 },
+  selectedChip: { display: 'flex', alignItems: 'center', gap: 6, background: '#f2f4f2', border: '1px solid #d4dfd4', borderRadius: 40, padding: '4px 10px' },
+  chipName: { fontSize: 12.5, fontWeight: 600, color: '#1f2f21' },
+  chipSubCat: { fontSize: 11, color: '#2d7a33', background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 40, padding: '1px 8px', fontWeight: 700 },
+  chipCat: { fontSize: 11, color: '#1f7a2b', background: '#e8f0e8', border: '1px solid #d4dfd4', borderRadius: 40, padding: '1px 8px', fontWeight: 700 },
   chipQty: { fontSize: 12.5, color: '#2d7a33', fontWeight: 700 },
-
-  addProductBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#f0fdf4', border: '1px dashed #86efac', color: '#2d7a33', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', width: '100%', justifyContent: 'center' },
-
+  addProductBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#ffffff', border: '1.5px dashed #d4dfd4', color: '#2d7a33', borderRadius: 10, padding: '9px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', width: '100%', justifyContent: 'center' },
   commentSection: { marginTop: 24 },
   commentLabelRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   charCount: { fontSize: 12, fontWeight: 500, transition: 'color 0.2s' },
-  commentInput: { width: '100%', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: '10px 12px', fontSize: 13.5, color: '#1a2e1b', outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', lineHeight: 1.6 },
-  limitWarning: { fontSize: 11.5, color: '#ef4444', marginTop: 4, display: 'block' },
-
-  formFooter: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 28, paddingTop: 20, borderTop: '1px solid #f3f4f6' },
+  commentInput: { width: '100%', background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 10, padding: '10px 12px', fontSize: 13, color: '#1f2f21', outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', lineHeight: 1.6 },
+  limitWarning: { fontSize: 11.5, color: '#b91c1c', marginTop: 4, display: 'block' },
+  formFooter: { display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20, paddingTop: 16, borderTop: '1px solid #d4dfd4', flexWrap: 'wrap' },
 }
