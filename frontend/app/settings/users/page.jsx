@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { useAuthStore } from '@/store/authStore'
 import { usersApi } from '@/lib/api/endpoints'
-import { ConfirmDelete, Toast, settingsTheme } from '@/components/settings/SettingsShared'
+import { ConfirmDelete, SettingsSelect, Toast, settingsTheme } from '@/components/settings/SettingsShared'
 import { X, Shield, Pencil, Trash2, Plus, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
 
 const ALL_SECTIONS = [
@@ -150,10 +150,10 @@ function UserModal({ open, onClose, onSave, initial }) {
           </div>
           <div>
             <label style={labelStyle}>Role</label>
-            <select value={form.role} onChange={(e) => set('role', e.target.value)} style={inputStyle}>
+            <SettingsSelect value={form.role} onChange={(e) => set('role', e.target.value)} wrapperStyle={{ width: '100%' }} selectStyle={selectInputStyle}>
               <option value="user">User</option>
               <option value="superuser">Super User</option>
-            </select>
+            </SettingsSelect>
           </div>
         </div>
 
@@ -310,11 +310,11 @@ export default function UsersPage() {
         </div>
 
         <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-          <select value={filterAccess} onChange={(e) => setFilterAccess(e.target.value)} style={selectStyle}>
+          <SettingsSelect value={filterAccess} onChange={(e) => setFilterAccess(e.target.value)} wrapperStyle={{ minWidth: 170 }} selectStyle={selectStyle}>
             <option value="all">All</option>
             <option value="superuser">Super Users</option>
             <option value="user">Regular Users</option>
-          </select>
+          </SettingsSelect>
         </div>
 
         <div style={tableWrap}>
@@ -514,15 +514,13 @@ const primaryBtn = {
 }
 
 const selectStyle = {
-  border: `1px solid ${settingsTheme.border}`,
-  borderRadius: 9,
-  padding: '6px 12px',
+  borderRadius: 40,
+  padding: '8px 30px 8px 12px',
   fontSize: 13.5,
-  color: '#425343',
+  color: settingsTheme.text,
   background: '#fff',
   cursor: 'pointer',
   outline: 'none',
-  minWidth: 150,
 }
 
 const tableWrap = {
@@ -652,13 +650,20 @@ const labelStyle = {
 
 const inputStyle = {
   width: '100%',
-  border: `1px solid ${settingsTheme.border}`,
+  borderWidth: '1px',
+  borderStyle: 'solid',
+  borderColor: settingsTheme.border,
   borderRadius: 10,
   padding: '8px 12px',
   fontSize: 13.5,
   color: settingsTheme.text,
   outline: 'none',
   boxSizing: 'border-box',
+}
+
+const selectInputStyle = {
+  borderRadius: 10,
+  padding: '8px 30px 8px 12px',
 }
 
 const permToggleBtn = {
