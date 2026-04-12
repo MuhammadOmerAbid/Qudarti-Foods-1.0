@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/authStore'
 import {
   ArrowDownToLine, Plus, Eye, Trash2, RotateCcw,
   FileText, Download, Search, Calendar,
-  ChevronDown, Edit2, X, CheckSquare, Square, FileSpreadsheet
+  ChevronDown, ChevronLeft, ChevronRight, Edit2, X, CheckSquare, Square, FileSpreadsheet
 } from 'lucide-react'
 
 const MOCK_SUPPLIERS = [
@@ -236,6 +236,7 @@ function DatePicker({ value, onChange, placeholder = "Select date", alignRight =
       days.push(
         <button
           key={day}
+          type="button"
           onClick={() => handleDateSelect(day)}
           style={{
             ...s.calendarDay,
@@ -258,6 +259,7 @@ function DatePicker({ value, onChange, placeholder = "Select date", alignRight =
     <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
       <button
         ref={buttonRef}
+        type="button"
         style={s.datePickerTrigger}
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -281,14 +283,14 @@ function DatePicker({ value, onChange, placeholder = "Select date", alignRight =
           }}
         >
           <div style={s.calendarHeader}>
-            <button onClick={() => changeMonth(-1)} style={s.calendarNavBtn}>←</button>
+            <button type="button" onClick={() => changeMonth(-1)} style={s.calendarNavBtn}><ChevronLeft size={14} /></button>
             <span style={s.calendarMonthYear}>{monthNames[currentMonth]} {currentYear}</span>
-            <button onClick={() => changeMonth(1)} style={s.calendarNavBtn}>→</button>
+            <button type="button" onClick={() => changeMonth(1)} style={s.calendarNavBtn}><ChevronRight size={14} /></button>
           </div>
           <div style={s.calendarGrid}>{renderCalendar()}</div>
           <div style={s.calendarFooter}>
-            <button onClick={handleToday} style={s.calendarFooterBtn}>Today</button>
-            <button onClick={handleClear} style={s.calendarFooterBtn}>Clear</button>
+            <button type="button" onClick={handleToday} style={s.calendarFooterBtn}>Today</button>
+            <button type="button" onClick={handleClear} style={s.calendarFooterBtn}>Clear</button>
           </div>
         </div>
       )}

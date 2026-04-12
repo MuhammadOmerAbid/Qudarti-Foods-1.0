@@ -54,7 +54,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class SuperuserTokenObtainPairSerializer(TokenObtainPairSerializer):
   def validate(self, attrs):
     data = super().validate(attrs)
-    if not self.user.is_superuser:
-      raise serializers.ValidationError('Only superusers can log in to this platform.')
+    if not self.user.is_active:
+      raise serializers.ValidationError('Your account is inactive.')
     data['user'] = UserSerializer(self.user).data
     return data

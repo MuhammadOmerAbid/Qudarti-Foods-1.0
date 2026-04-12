@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import AccountLayout from '@/components/accounts/AccountLayout'
@@ -36,10 +37,36 @@ const QUICK_ACTIONS = [
 export default function AccountsDashboardPage() {
   const router = useRouter()
   const { user, panel, hasPermission } = useAuthStore()
+  const [globalQuery, setGlobalQuery] = useState('')
   const isSuperuser = user?.role === 'superuser'
+  const normalizedQuery = globalQuery.trim().toLowerCase()
 
-  const visibleOperations = OPERATIONS.filter((item) => isSuperuser || hasPermission(item.id))
-  const visibleQuickActions = QUICK_ACTIONS.filter((item) => isSuperuser || hasPermission(item.id))
+  useEffect(() => {
+    const onPanelSearch = (event) => {
+      const { panel: targetPanel, query } = event.detail || {}
+      if (targetPanel !== 'account') return
+      setGlobalQuery(String(query || ''))
+    }
+
+    window.addEventListener('panel-global-search', onPanelSearch)
+    return () => window.removeEventListener('panel-global-search', onPanelSearch)
+  }, [])
+
+  const visibleOperations = useMemo(() => {
+    return OPERATIONS.filter((item) => {
+      if (!isSuperuser && !hasPermission(item.id)) return false
+      if (!normalizedQuery) return true
+      return `${item.label} ${item.sub} ${item.id} ${item.path}`.toLowerCase().includes(normalizedQuery)
+    })
+  }, [hasPermission, isSuperuser, normalizedQuery])
+
+  const visibleQuickActions = useMemo(() => {
+    return QUICK_ACTIONS.filter((item) => {
+      if (!isSuperuser && !hasPermission(item.id)) return false
+      if (!normalizedQuery) return true
+      return `${item.label} ${item.id} ${item.path}`.toLowerCase().includes(normalizedQuery)
+    })
+  }, [hasPermission, isSuperuser, normalizedQuery])
 
   return (
     <AccountLayout>
@@ -79,7 +106,7 @@ export default function AccountsDashboardPage() {
             <p style={s.sectionSub}>Modules available in your account permissions</p>
           </div>
           <div style={s.grid}>
-            {visibleOperations.map((item) => {
+            {visibleOperations.length > 0 ? visibleOperations.map((item) => {
               const Icon = item.icon
               return (
                 <button
@@ -109,7 +136,7 @@ export default function AccountsDashboardPage() {
                   <p style={s.cardSub}>{item.sub}</p>
                 </button>
               )
-            })}
+            }) : <p style={s.empty}>No modules match your search.</p>}
           </div>
         </section>
 
