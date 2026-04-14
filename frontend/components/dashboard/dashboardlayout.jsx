@@ -1,22 +1,24 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import AppSidebar from '@/components/layout/Sidebar'
-import { Bell, Mail, Search } from 'lucide-react'
+import { Bell, Mail, Search, X } from 'lucide-react'
 
 export default function DashboardLayout({ children }) {
   const { user, token, panel, hasHydrated } = useAuthStore()
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
+  const [globalQuery, setGlobalQuery] = useState('')
+  const searchInputRef = useRef(null)
 
   useEffect(() => {
     if (!hasHydrated) return
     if (!user || !token) router.replace('/auth/login')
     else if (!panel) router.replace('/panel-selection')
     else if (panel !== 'store') router.replace('/accounts-dashboard')
-  }, [hasHydrated, user, token, panel])
+  }, [hasHydrated, user, token, panel, router])
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -34,6 +36,60 @@ export default function DashboardLayout({ children }) {
     return () => mq.removeEventListener('change', apply)
   }, [])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const onKeydown = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+        event.preventDefault()
+        searchInputRef.current?.focus()
+        searchInputRef.current?.select()
+      }
+    }
+    window.addEventListener('keydown', onKeydown)
+    return () => window.removeEventListener('keydown', onKeydown)
+  }, [])
+
+  const setNativeInputValue = (inputEl, value) => {
+    const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')
+    if (descriptor?.set) descriptor.set.call(inputEl, value)
+    else inputEl.value = value
+  }
+
+  const syncSearchToPage = (query) => {
+    if (typeof window === 'undefined') return 0
+
+    const pageRoot = document.querySelector('[data-panel-content="store"]')
+    if (!pageRoot) return 0
+
+    const pageSearchInputs = Array.from(
+      pageRoot.querySelectorAll('input[placeholder*="search" i], input[type="search"]')
+    ).filter((inputEl) => inputEl !== searchInputRef.current)
+
+    pageSearchInputs.forEach((inputEl) => {
+      setNativeInputValue(inputEl, query)
+      inputEl.dispatchEvent(new Event('input', { bubbles: true }))
+      inputEl.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+
+    window.dispatchEvent(new CustomEvent('panel-global-search', { detail: { panel: 'store', query } }))
+    return pageSearchInputs.length
+  }
+
+  const runGlobalSearch = (query) => {
+    const trimmed = query.trim()
+    const syncedCount = syncSearchToPage(trimmed)
+
+    if (!trimmed || syncedCount > 0) return
+    if (typeof window !== 'undefined' && typeof window.find === 'function') {
+      window.find(trimmed, false, false, true, false, false, false)
+    }
+  }
+
+  useEffect(() => {
+    const timeout = setTimeout(() => runGlobalSearch(globalQuery), 120)
+    return () => clearTimeout(timeout)
+  }, [globalQuery])
+
   const initial = (user?.username?.[0] || 'U').toUpperCase()
   const accountType = user?.role === 'superuser' ? 'Super User' : 'User'
 
@@ -45,11 +101,34 @@ export default function DashboardLayout({ children }) {
 
       <main style={{ ...s.main, paddingLeft: collapsed ? 88 : 256 }}>
         <header style={s.header}>
-          <div style={s.searchWrap}>
+          <form
+            style={s.searchWrap}
+            onSubmit={(event) => {
+              event.preventDefault()
+              runGlobalSearch(globalQuery)
+            }}
+          >
             <Search size={14} color="#6c8d6c" style={{ flexShrink: 0 }} />
-            <input style={s.searchInput} placeholder="Search task" type="text" />
-            <kbd style={s.searchKbd}>⌘ F</kbd>
-          </div>
+            <input
+              ref={searchInputRef}
+              style={s.searchInput}
+              placeholder="Search panel data"
+              type="text"
+              value={globalQuery}
+              onChange={(e) => setGlobalQuery(e.target.value)}
+            />
+            {globalQuery ? (
+              <button
+                type="button"
+                style={s.clearBtn}
+                title="Clear search"
+                onClick={() => setGlobalQuery('')}
+              >
+                <X size={12} />
+              </button>
+            ) : null}
+            <kbd style={s.searchKbd}>Ctrl F</kbd>
+          </form>
 
           <div style={{ flex: 1 }} />
 
@@ -73,7 +152,7 @@ export default function DashboardLayout({ children }) {
           </div>
         </header>
 
-        <div style={s.content}>
+        <div style={s.content} data-panel-content="store">
           {children}
         </div>
       </main>
@@ -118,7 +197,7 @@ const s = {
     border: '1px solid #dde4dd',
     borderRadius: '40px',
     padding: '6px 16px',
-    flex: '0 1 260px',
+    flex: '0 1 300px',
     boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
   },
   searchInput: {
@@ -130,6 +209,20 @@ const s = {
     flex: 1,
     minWidth: 0,
     fontFamily: 'inherit',
+  },
+  clearBtn: {
+    width: 22,
+    height: 22,
+    borderRadius: 22,
+    border: 'none',
+    background: '#f3f7f3',
+    color: '#7a8a7a',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    padding: 0,
+    flexShrink: 0,
   },
   searchKbd: {
     fontSize: 10,

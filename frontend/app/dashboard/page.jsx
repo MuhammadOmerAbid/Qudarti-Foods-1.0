@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
@@ -124,18 +125,55 @@ const PROCESS_FLOW = [
 export default function DashboardPage() {
   const { user, panel, hasPermission } = useAuthStore()
   const router = useRouter()
+  const [globalQuery, setGlobalQuery] = useState('')
 
   const isSuperuser = user?.role === 'superuser'
+  const normalizedQuery = globalQuery.trim().toLowerCase()
 
-  const visibleOperations = OPERATIONS.filter((item) => {
-    if (isSuperuser) return true
-    return hasPermission(item.id)
-  })
+  useEffect(() => {
+    const onPanelSearch = (event) => {
+      const { panel: targetPanel, query } = event.detail || {}
+      if (targetPanel !== 'store') return
+      setGlobalQuery(String(query || ''))
+    }
 
-  const visibleQuickActions = QUICK_ACTIONS.filter((item) => {
-    if (isSuperuser) return true
-    return hasPermission(item.id)
-  })
+    window.addEventListener('panel-global-search', onPanelSearch)
+    return () => window.removeEventListener('panel-global-search', onPanelSearch)
+  }, [])
+
+  const visibleOperations = useMemo(() => {
+    return OPERATIONS.filter((item) => {
+      if (!isSuperuser && !hasPermission(item.id)) return false
+      if (!normalizedQuery) return true
+      const fieldsText = (item.fields || [])
+        .map((field) => `${field.label} ${field.value}`)
+        .join(' ')
+      const haystack = `${item.title} ${item.subtitle} ${item.id} ${fieldsText}`.toLowerCase()
+      return haystack.includes(normalizedQuery)
+    })
+  }, [hasPermission, isSuperuser, normalizedQuery])
+
+  const visibleQuickActions = useMemo(() => {
+    return QUICK_ACTIONS.filter((item) => {
+      if (!isSuperuser && !hasPermission(item.id)) return false
+      if (!normalizedQuery) return true
+      return `${item.label} ${item.id} ${item.path}`.toLowerCase().includes(normalizedQuery)
+    })
+  }, [hasPermission, isSuperuser, normalizedQuery])
+
+  const visibleSettingsShortcuts = useMemo(() => {
+    if (!normalizedQuery) return SETTINGS_SHORTCUTS
+    return SETTINGS_SHORTCUTS.filter((item) =>
+      `${item.label} ${item.path} ${item.id || ''}`.toLowerCase().includes(normalizedQuery)
+    )
+  }, [normalizedQuery])
+
+  const visibleProcessFlow = useMemo(() => {
+    if (!normalizedQuery) return PROCESS_FLOW
+    return PROCESS_FLOW.filter((step) =>
+      `${step.label} ${step.path}`.toLowerCase().includes(normalizedQuery)
+    )
+  }, [normalizedQuery])
 
   const statCards = [
     { label: 'Assigned Modules', value: String(visibleOperations.length) },
@@ -255,12 +293,12 @@ export default function DashboardPage() {
             </div>
 
             <div style={s.stack}>
-              {PROCESS_FLOW.map((step, idx) => (
+              {visibleProcessFlow.length > 0 ? visibleProcessFlow.map((step, idx) => (
                 <button key={step.path} style={s.rowBtn} onClick={() => router.push(step.path)}>
                   <span>{idx + 1}. {step.label}</span>
                   <ChevronRight size={14} color="#90ad90" />
                 </button>
-              ))}
+              )) : <p style={s.emptyText}>No process steps match your search.</p>}
             </div>
           </article>
 
@@ -272,7 +310,7 @@ export default function DashboardPage() {
 
             {isSuperuser ? (
               <div style={s.stack}>
-                {SETTINGS_SHORTCUTS.map((item) => {
+                {visibleSettingsShortcuts.length > 0 ? visibleSettingsShortcuts.map((item) => {
                   const Icon = item.icon
                   return (
                     <button key={item.path} style={s.rowBtn} onClick={() => router.push(item.path)}>
@@ -280,7 +318,7 @@ export default function DashboardPage() {
                       <ChevronRight size={14} color="#90ad90" />
                     </button>
                   )
-                })}
+                }) : <p style={s.emptyText}>No settings shortcuts match your search.</p>}
               </div>
             ) : (
               <p style={s.emptyText}>Settings management is available to super users only.</p>
