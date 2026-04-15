@@ -3,38 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
+import { gateInwardApi, suppliersApi, brandsApi, categoriesApi, productsApi, unitsApi } from '@/lib/api/endpoints'
 import { Plus, X, ArrowLeft, Save, ChevronDown } from 'lucide-react'
 
-/* ─── Replace with API calls in production ─── */
-const SUPPLIERS = [
-  { id: 1, name: 'Soghat Enterprises', address: 'Plot 12, Industrial Area, Lahore' },
-  { id: 2, name: 'Al-Faisal Trading', address: 'Shop 5, Main Market, Karachi' },
-  { id: 3, name: 'Hassan & Sons', address: 'Block C, Gulberg III, Lahore' },
-]
-
-const BRANDS = [
-  { id: 1, name: 'Soghat' },
-  { id: 2, name: 'General' },
-  { id: 3, name: 'Premium' },
-]
-
-const CATEGORIES = [
-  { id: 1, brandId: 2, name: 'Seal' },
-  { id: 2, brandId: 1, name: 'Bottle' },
-  { id: 3, brandId: 1, name: 'Sticker' },
-  { id: 4, brandId: 3, name: 'Carton' },
-]
-
-const PRODUCTS = [
-  { id: 1, categoryId: 1, name: '69 mm Seal' },
-  { id: 2, categoryId: 1, name: '72 MM Seal' },
-  { id: 3, categoryId: 2, name: '500ml Bottle' },
-  { id: 4, categoryId: 2, name: '1L Bottle' },
-  { id: 5, categoryId: 3, name: 'Front Sticker' },
-  { id: 6, categoryId: 4, name: 'Standard Carton' },
-]
-
-const UNITS = ['Unit', 'Bags', 'Carton', 'Dozen', 'KG', 'Litre']
+const DEFAULT_UNITS = ['Unit', 'Bags', 'Carton', 'Dozen', 'KG', 'Litre']
 
 /* Auto-generate GR number */
 const getNextGR = () => `QUD${Math.floor(Math.random() * 900) + 100}`
@@ -43,12 +15,12 @@ const getNextGR = () => `QUD${Math.floor(Math.random() * 900) + 100}`
 const todayISO = () => new Date().toISOString().split('T')[0]
 
 /* Fresh blank item row */
-const blankItem = () => ({
+const blankItem = (defaultUnit = 'Unit') => ({
   key: Date.now() + Math.random(),
   brandId: '', brandName: '',
   categoryId: '', categoryName: '',
   productId: '', productName: '',
-  quantity: '', unit: 'Unit',
+  quantity: '', unit: defaultUnit,
 })
 
 function DropdownField({
@@ -131,78 +103,195 @@ function DropdownField({
 export default function GateInwardNewPage() {
   const router = useRouter()
 
-  const [grNo] = useState(getNextGR())
+  const [grNo, setGrNo] = useState(getNextGR())
   const [receiveDate, setReceiveDate] = useState(todayISO())
   const [supplierId, setSupplierId] = useState('')
   const [address, setAddress] = useState('')
   const [note, setNote] = useState('')
   const [items, setItems] = useState([blankItem()])
   const [saving, setSaving] = useState(false)
+  const [loadingOptions, setLoadingOptions] = useState(true)
+  const [loadError, setLoadError] = useState('')
   const [errors, setErrors] = useState({})
 
-  /* ── Supplier selected ── */
+  const [suppliers, setSuppliers] = useState([])
+  const [brands, setBrands] = useState([])
+  const [categories, setCategories] = useState([])
+  const [products, setProducts] = useState([])
+  const [units, setUnits] = useState(DEFAULT_UNITS)
+
+  useEffect(() => {
+    let active = true
+
+    const loadOptions = async () => {
+      setLoadingOptions(true)
+      setLoadError('')
+
+      try {
+        const [nextGrRes, suppliersRes, brandsRes, categoriesRes, productsRes, unitsRes] = await Promise.all([
+          gateInwardApi.nextGR(),
+          suppliersApi.list(),
+          brandsApi.list(),
+          categoriesApi.list(),
+          productsApi.list(),
+          unitsApi.list(),
+        ])
+
+        if (!active) return
+
+        const suppliersList = Array.isArray(suppliersRes) ? suppliersRes : (suppliersRes?.results || [])
+        const brandsList = Array.isArray(brandsRes) ? brandsRes : (brandsRes?.results || [])
+        const categoriesListRaw = Array.isArray(categoriesRes) ? categoriesRes : (categoriesRes?.results || [])
+        const productsListRaw = Array.isArray(productsRes) ? productsRes : (productsRes?.results || [])
+        const unitsListRaw = Array.isArray(unitsRes) ? unitsRes : (unitsRes?.results || [])
+
+        const normalizedCategories = categoriesListRaw.map((entry) => ({
+          ...entry,
+          brandId: String(entry.brand ?? entry.brand_id ?? ''),
+        }))
+
+        const normalizedProducts = productsListRaw.map((entry) => ({
+          ...entry,
+          categoryId: String(entry.category ?? entry.category_id ?? ''),
+        }))
+
+        const unitNames = Array.from(
+          new Set(
+            unitsListRaw
+              .map((entry) => String(entry?.name || '').trim())
+              .filter(Boolean)
+          )
+        )
+
+        const resolvedUnits = unitNames.length ? unitNames : DEFAULT_UNITS
+
+        setGrNo(nextGrRes?.gr_no || getNextGR())
+        setSuppliers(suppliersList)
+        setBrands(brandsList)
+        setCategories(normalizedCategories)
+        setProducts(normalizedProducts)
+        setUnits(resolvedUnits)
+        setItems((prev) => prev.map((item) => ({ ...item, unit: item.unit || resolvedUnits[0] || 'Unit' })))
+      } catch {
+        if (!active) return
+        setLoadError('Failed to load settings data. Please refresh and try again.')
+      } finally {
+        if (active) setLoadingOptions(false)
+      }
+    }
+
+    loadOptions()
+    return () => {
+      active = false
+    }
+  }, [])
+
+  /* Supplier selected */
   const handleSupplierChange = (nextValue) => {
     if (nextValue === '') {
       setSupplierId('')
       setAddress('')
-      setErrors(err => ({ ...err, supplier: undefined }))
+      setErrors((err) => ({ ...err, supplier: undefined }))
       return
     }
 
-    const id = Number(nextValue)
-    setSupplierId(id)
-    const sup = SUPPLIERS.find(s => s.id === id)
-    setAddress(sup?.address || '')
-    setErrors(err => ({ ...err, supplier: undefined }))
+    setSupplierId(String(nextValue))
+    const selectedSupplier = suppliers.find((entry) => String(entry.id) === String(nextValue))
+    setAddress(selectedSupplier?.address || '')
+    setErrors((err) => ({ ...err, supplier: undefined }))
   }
 
-  /* ── Item row update ── */
+  /* Item row update */
   const updateItem = (key, field, value) => {
-    setItems(prev => prev.map(item => {
+    setItems((prev) => prev.map((item) => {
       if (item.key !== key) return item
+
       const updated = { ...item, [field]: value }
+
       if (field === 'brandId') {
-        const brand = BRANDS.find(b => b.id === Number(value))
-        updated.brandName = brand?.name || ''
-        updated.categoryId = ''; updated.categoryName = ''
-        updated.productId = ''; updated.productName = ''
+        const selectedBrand = brands.find((entry) => String(entry.id) === String(value))
+        updated.brandName = selectedBrand?.name || ''
+        updated.categoryId = ''
+        updated.categoryName = ''
+        updated.productId = ''
+        updated.productName = ''
       }
+
       if (field === 'categoryId') {
-        const cat = CATEGORIES.find(c => c.id === Number(value))
-        updated.categoryName = cat?.name || ''
-        updated.productId = ''; updated.productName = ''
+        const selectedCategory = categories.find((entry) => String(entry.id) === String(value))
+        updated.categoryName = selectedCategory?.name || ''
+        updated.productId = ''
+        updated.productName = ''
       }
+
       if (field === 'productId') {
-        const prod = PRODUCTS.find(p => p.id === Number(value))
-        updated.productName = prod?.name || ''
+        const selectedProduct = products.find((entry) => String(entry.id) === String(value))
+        updated.productName = selectedProduct?.name || ''
       }
+
       return updated
     }))
-    setErrors(err => ({ ...err, items: undefined }))
+
+    setErrors((err) => ({ ...err, items: undefined }))
   }
 
-  const addItem = () => setItems(prev => [...prev, blankItem()])
-  const removeItem = (key) => setItems(prev => prev.filter(i => i.key !== key))
+  const addItem = () => setItems((prev) => [...prev, blankItem(units[0] || 'Unit')])
+  const removeItem = (key) => setItems((prev) => prev.filter((entry) => entry.key !== key))
 
-  /* ── Validate ── */
+  /* Validate */
   const validate = () => {
-    const e = {}
-    if (!supplierId) e.supplier = 'Please select a supplier'
-    const incomplete = items.some(i => !i.brandId || !i.categoryId || !i.productId || !i.quantity)
-    if (incomplete) e.items = 'Please complete all item fields'
-    setErrors(e)
-    return Object.keys(e).length === 0
+    const nextErrors = {}
+
+    if (!supplierId) nextErrors.supplier = 'Please select a supplier'
+
+    const incomplete = items.some((item) => (
+      !item.brandId || !item.categoryId || !item.productId || !item.quantity || Number(item.quantity) <= 0 || !item.unit
+    ))
+
+    if (incomplete) nextErrors.items = 'Please complete all item fields with valid quantity'
+
+    setErrors(nextErrors)
+    return Object.keys(nextErrors).length === 0
   }
 
-  /* ── Save ── */
+  /* Save */
   const handleSave = async () => {
     if (!validate()) return
+
     setSaving(true)
+    setErrors((prev) => ({ ...prev, submit: undefined }))
+
     try {
-      // TODO: replace with real API call
-      await new Promise(r => setTimeout(r, 800))
+      const selectedSupplier = suppliers.find((entry) => String(entry.id) === String(supplierId))
+
+      const payloadItems = items.map((item) => ({
+        brandId: Number(item.brandId),
+        brandName: item.brandName,
+        categoryId: Number(item.categoryId),
+        categoryName: item.categoryName,
+        productId: Number(item.productId),
+        productName: item.productName,
+        quantity: Number(item.quantity),
+        unit: item.unit,
+      }))
+
+      await gateInwardApi.create({
+        gr_no: grNo,
+        supplier: Number(supplierId),
+        supplier_name: selectedSupplier?.name || '',
+        address: address.trim(),
+        note: note.trim(),
+        receive_date: receiveDate,
+        status: 'Received',
+        items: payloadItems,
+      })
+
       router.push('/gate-inward')
     } catch {
+      setErrors((prev) => ({
+        ...prev,
+        submit: 'Failed to save gate inward entry. Please try again.',
+      }))
       setSaving(false)
     }
   }
@@ -222,13 +311,20 @@ export default function GateInwardNewPage() {
               <p style={s.pageSubtitle}>Add new entry</p>
             </div>
           </div>
-          <button style={saving ? s.saveBtnDisabled : s.saveBtn} onClick={handleSave} disabled={saving}>
+          <button
+            style={saving || loadingOptions ? s.saveBtnDisabled : s.saveBtn}
+            onClick={handleSave}
+            disabled={saving || loadingOptions}
+          >
             <Save size={15} /> {saving ? 'Saving...' : 'SAVE'}
           </button>
         </div>
 
         {/* Form Card */}
         <div style={s.card}>
+
+          {loadError ? <div style={s.itemsError}>{loadError}</div> : null}
+          {errors.submit ? <div style={s.itemsError}>{errors.submit}</div> : null}
 
           {/* Top Row: GR, Date, Supplier */}
           <div style={s.topRow}>
@@ -245,7 +341,7 @@ export default function GateInwardNewPage() {
                 type="date"
                 style={s.input}
                 value={receiveDate}
-                onChange={e => setReceiveDate(e.target.value)}
+                onChange={(e) => setReceiveDate(e.target.value)}
               />
             </div>
 
@@ -256,10 +352,11 @@ export default function GateInwardNewPage() {
                 value={supplierId}
                 onChange={handleSupplierChange}
                 hasError={Boolean(errors.supplier)}
+                disabled={loadingOptions}
                 placeholder="-- Select Supplier --"
                 options={[
                   { value: '', label: '-- Select Supplier --' },
-                  ...SUPPLIERS.map((sup) => ({ value: sup.id, label: sup.name })),
+                  ...suppliers.map((sup) => ({ value: String(sup.id), label: sup.name })),
                 ]}
               />
               {errors.supplier && <span style={s.errorText}>{errors.supplier}</span>}
@@ -273,7 +370,7 @@ export default function GateInwardNewPage() {
               <textarea
                 style={{ ...s.input, ...s.textarea }}
                 value={address}
-                onChange={e => setAddress(e.target.value)}
+                onChange={(e) => setAddress(e.target.value)}
                 placeholder="Auto-filled from supplier selection"
                 readOnly={!!supplierId}
               />
@@ -283,7 +380,7 @@ export default function GateInwardNewPage() {
               <textarea
                 style={{ ...s.input, ...s.textarea }}
                 value={note}
-                onChange={e => setNote(e.target.value)}
+                onChange={(e) => setNote(e.target.value)}
                 placeholder="Optional note..."
               />
             </div>
@@ -291,7 +388,7 @@ export default function GateInwardNewPage() {
 
           {/* Add item button */}
           <div style={s.itemsHeader}>
-            <button style={s.addItemBtn} onClick={addItem}>
+            <button style={s.addItemBtn} onClick={addItem} disabled={loadingOptions}>
               <Plus size={15} />
             </button>
           </div>
@@ -302,8 +399,8 @@ export default function GateInwardNewPage() {
           {errors.items && <div style={s.itemsError}>{errors.items}</div>}
 
           {items.map((item, idx) => {
-            const brandCats = CATEGORIES.filter(c => c.brandId === Number(item.brandId))
-            const catProds = PRODUCTS.filter(p => p.categoryId === Number(item.categoryId))
+            const brandCats = categories.filter((entry) => String(entry.brandId) === String(item.brandId))
+            const catProds = products.filter((entry) => String(entry.categoryId) === String(item.categoryId))
 
             return (
               <div key={item.key} style={s.itemRow}>
@@ -313,10 +410,11 @@ export default function GateInwardNewPage() {
                   <DropdownField
                     value={item.brandId}
                     onChange={(next) => updateItem(item.key, 'brandId', String(next))}
+                    disabled={loadingOptions}
                     placeholder="Select Brand"
                     options={[
                       { value: '', label: 'Select Brand' },
-                      ...BRANDS.map((b) => ({ value: b.id, label: b.name })),
+                      ...brands.map((entry) => ({ value: String(entry.id), label: entry.name })),
                     ]}
                   />
                 </div>
@@ -327,11 +425,11 @@ export default function GateInwardNewPage() {
                   <DropdownField
                     value={item.categoryId}
                     onChange={(next) => updateItem(item.key, 'categoryId', String(next))}
-                    disabled={!item.brandId}
+                    disabled={loadingOptions || !item.brandId}
                     placeholder="Select Category"
                     options={[
                       { value: '', label: 'Select Category' },
-                      ...brandCats.map((c) => ({ value: c.id, label: c.name })),
+                      ...brandCats.map((entry) => ({ value: String(entry.id), label: entry.name })),
                     ]}
                   />
                 </div>
@@ -342,11 +440,11 @@ export default function GateInwardNewPage() {
                   <DropdownField
                     value={item.productId}
                     onChange={(next) => updateItem(item.key, 'productId', String(next))}
-                    disabled={!item.categoryId}
+                    disabled={loadingOptions || !item.categoryId}
                     placeholder="Select Product"
                     options={[
                       { value: '', label: 'Select Product' },
-                      ...catProds.map((p) => ({ value: p.id, label: p.name })),
+                      ...catProds.map((entry) => ({ value: String(entry.id), label: entry.name })),
                     ]}
                   />
                 </div>
@@ -360,7 +458,7 @@ export default function GateInwardNewPage() {
                     min="1"
                     placeholder="Quantity"
                     value={item.quantity}
-                    onChange={e => updateItem(item.key, 'quantity', e.target.value)}
+                    onChange={(e) => updateItem(item.key, 'quantity', e.target.value)}
                   />
                 </div>
 
@@ -370,8 +468,9 @@ export default function GateInwardNewPage() {
                   <DropdownField
                     value={item.unit}
                     onChange={(next) => updateItem(item.key, 'unit', String(next))}
+                    disabled={loadingOptions}
                     placeholder="Select Unit"
-                    options={UNITS.map((u) => ({ value: u, label: u }))}
+                    options={units.map((entry) => ({ value: entry, label: entry }))}
                   />
                 </div>
 
@@ -390,7 +489,11 @@ export default function GateInwardNewPage() {
           {/* Bottom Save Button */}
           <div style={s.formFooter}>
             <button style={s.cancelBtn} onClick={() => router.push('/gate-inward')}>Cancel</button>
-            <button style={saving ? s.saveBtnDisabled : s.saveBtn} onClick={handleSave} disabled={saving}>
+            <button
+              style={saving || loadingOptions ? s.saveBtnDisabled : s.saveBtn}
+              onClick={handleSave}
+              disabled={saving || loadingOptions}
+            >
               <Save size={15} /> {saving ? 'Saving...' : 'SAVE'}
             </button>
           </div>
@@ -399,7 +502,6 @@ export default function GateInwardNewPage() {
     </DashboardLayout>
   )
 }
-
 const s = {
   wrapper: { maxWidth: 1100, margin: '0 auto' },
   pageHeader: { display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' },

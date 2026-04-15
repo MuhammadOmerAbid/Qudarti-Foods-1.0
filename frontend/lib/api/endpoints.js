@@ -48,12 +48,24 @@ export const sizesApi = {
   delete: (id) => del(`/sizes/${id}/`),
 }
 
+export const unitsApi = {
+  list: (params) => get('/sizes/', params),
+  create: (name) => post('/sizes/', { name }),
+  update: (id, name) => put(`/sizes/${id}/`, { name }),
+  toggleStatus: (id, status) => patch(`/sizes/${id}/`, { status }),
+  delete: (id) => del(`/sizes/${id}/`),
+}
+
 // ── Packing ──────────────────────────────────────────────────
 export const packingApi = {
   list: () => get('/packing/'),
   create: (name) => post('/packing/', { name }),
+  update: (id, name) => put(`/packing/${id}/`, { name }),
+  toggleStatus: (id, status) => patch(`/packing/${id}/`, { status }),
   delete: (id) => del(`/packing/${id}/`),
 }
+
+export const packagingApi = packingApi
 
 // ── Suppliers ────────────────────────────────────────────────
 export const suppliersApi = {

@@ -126,7 +126,7 @@ export default function CustomersPage() {
       <SettingsPageShell title="Customers" subtitle="Manage your customers"
         onAdd={() => router.push('/settings/customers/new')} onRefresh={load}
         filterValue={filter} onFilterChange={setFilter}
-        addLabel="+ Add Customer" canEdit={canEdit}>
+        addLabel="Add Customer" canEdit={canEdit}>
         {loading
           ? <div style={{ padding: 40, textAlign: 'center', color: settingsTheme.textSubtle }}>Loading...</div>
           : <SettingsTable columns={[
