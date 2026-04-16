@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { ArrowUpFromLine, Plus, X, ArrowLeft, Save } from 'lucide-react'
+import { StoreThemeDatePicker, StoreThemeDropdown } from '@/components/store/shared/StoreThemeControls'
 import {
   CUSTOMERS,
   GATE_OUTWARD_STORAGE_KEY,
@@ -223,26 +224,35 @@ export default function GateOutwardNewPage() {
 
             <div style={s.fieldGroup}>
               <label style={s.label}>Date:</label>
-              <input type="date" style={{ ...s.input, ...(errors.date ? s.inputError : {}) }} value={date} onChange={(e) => setDate(e.target.value)} />
+              <StoreThemeDatePicker
+                value={date}
+                onChange={setDate}
+                placeholder="Select date"
+                variant="input"
+                triggerStyle={errors.date ? s.inputError : {}}
+              />
               {errors.date && <span style={s.errorText}>{errors.date}</span>}
             </div>
 
             <div style={s.fieldGroup}>
               <label style={s.label}>Customer:</label>
-              <select
-                style={{ ...s.input, ...(errors.customer ? s.inputError : {}) }}
+              <StoreThemeDropdown
                 value={customerId}
-                onChange={(e) => {
-                  const id = e.target.value
+                onChange={(nextCustomerId) => {
+                  const id = String(nextCustomerId)
                   setCustomerId(id)
                   const picked = CUSTOMERS.find((c) => c.id === Number(id))
                   setAddress(picked?.address || '')
                   setErrors((prev) => ({ ...prev, customer: undefined }))
                 }}
-              >
-                <option value="">Select Customer</option>
-                {CUSTOMERS.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+                hasError={Boolean(errors.customer)}
+                variant="input"
+                placeholder="Select Customer"
+                options={[
+                  { value: '', label: 'Select Customer' },
+                  ...CUSTOMERS.map((c) => ({ value: String(c.id), label: c.name })),
+                ]}
+              />
               {errors.customer && <span style={s.errorText}>{errors.customer}</span>}
             </div>
           </div>
@@ -300,18 +310,33 @@ export default function GateOutwardNewPage() {
                 <div style={s.itemRow}>
                   <div style={s.itemField}>
                     {idx === 0 && <label style={s.label}>Source</label>}
-                    <select style={s.input} value={item.source} onChange={(e) => updateItem(item.key, 'source', e.target.value)}>
-                      <option value="">Source</option>
-                      {SOURCES.map((src) => <option key={src} value={src}>{src}</option>)}
-                    </select>
+                    <StoreThemeDropdown
+                      value={item.source}
+                      onChange={(nextSource) => updateItem(item.key, 'source', nextSource)}
+                      variant="input"
+                      placeholder="Source"
+                      options={[
+                        { value: '', label: 'Source' },
+                        ...SOURCES.map((src) => ({ value: src, label: src })),
+                      ]}
+                    />
                   </div>
 
                   <div style={s.itemField}>
                     {idx === 0 && <label style={s.label}>Select Product</label>}
-                    <select style={s.input} value={item.productId} onChange={(e) => updateItem(item.key, 'productId', e.target.value)}>
-                      <option value="">Select Product</option>
-                      {PRODUCTS.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.brand})</option>)}
-                    </select>
+                    <StoreThemeDropdown
+                      value={item.productId}
+                      onChange={(nextProductId) => updateItem(item.key, 'productId', String(nextProductId))}
+                      variant="input"
+                      placeholder="Select Product"
+                      options={[
+                        { value: '', label: 'Select Product' },
+                        ...PRODUCTS.map((p) => ({
+                          value: String(p.id),
+                          label: `${p.name} (${p.brand})`,
+                        })),
+                      ]}
+                    />
                   </div>
 
                   <div style={{ ...s.itemField, flex: '0 0 120px' }}>
@@ -328,9 +353,12 @@ export default function GateOutwardNewPage() {
 
                   <div style={{ ...s.itemField, flex: '0 0 120px' }}>
                     {idx === 0 && <label style={s.label}>Unit</label>}
-                    <select style={s.input} value={item.unit} onChange={(e) => updateItem(item.key, 'unit', e.target.value)}>
-                      {UNITS.map((u) => <option key={u}>{u}</option>)}
-                    </select>
+                    <StoreThemeDropdown
+                      value={item.unit}
+                      onChange={(nextUnit) => updateItem(item.key, 'unit', nextUnit)}
+                      variant="input"
+                      options={UNITS.map((u) => ({ value: u, label: u }))}
+                    />
                   </div>
 
                   <div style={{ ...s.itemField, flex: '0 0 36px', alignSelf: 'flex-end' }}>

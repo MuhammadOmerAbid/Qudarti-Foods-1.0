@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { gateInwardApi, suppliersApi, brandsApi, categoriesApi, productsApi, unitsApi } from '@/lib/api/endpoints'
 import { Plus, X, ArrowLeft, Save, ChevronDown } from 'lucide-react'
+import { StoreThemeDatePicker } from '@/components/store/shared/StoreThemeControls'
 
 const DEFAULT_UNITS = ['Unit', 'Bags', 'Carton', 'Dozen', 'KG', 'Litre']
 
@@ -56,9 +57,10 @@ function DropdownField({
   }, [])
 
   return (
-    <div ref={rootRef} style={s.dropdownWrap}>
+    <div ref={rootRef} style={s.dropdownWrap} className="store-theme-dropdown">
       <button
         type="button"
+        className="store-theme-dropdown-trigger"
         style={{
           ...s.dropdownTrigger,
           ...(disabled ? s.dropdownDisabled : {}),
@@ -77,13 +79,14 @@ function DropdownField({
       </button>
 
       {open && !disabled ? (
-        <div style={s.dropdownMenu}>
+        <div style={s.dropdownMenu} className="store-theme-dropdown-menu">
           {options.map((option) => {
             const active = String(option.value) === String(value)
             return (
               <button
                 key={String(option.value)}
                 type="button"
+                className={`store-theme-dropdown-item${active ? ' store-theme-dropdown-item-active' : ''}`}
                 style={{ ...s.dropdownItem, ...(active ? s.dropdownItemActive : {}) }}
                 onClick={() => {
                   onChange(option.value)
@@ -337,11 +340,11 @@ export default function GateInwardNewPage() {
             {/* Receive Date (auto today, changeable) */}
             <div style={s.fieldGroup}>
               <label style={s.label}>Receive Date:</label>
-              <input
-                type="date"
-                style={s.input}
+              <StoreThemeDatePicker
                 value={receiveDate}
-                onChange={(e) => setReceiveDate(e.target.value)}
+                onChange={setReceiveDate}
+                placeholder="Select date"
+                variant="input"
               />
             </div>
 

@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
-import { ArrowLeft, Save, Plus, X, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Save, Plus, X } from 'lucide-react'
+import { StoreThemeDatePicker, StoreThemeDropdown } from '@/components/store/shared/StoreThemeControls'
 
 /* ─── Mock Data — replace with real API calls ─── */
 const PRODUCTS = [
@@ -95,7 +96,7 @@ export default function RequisitionNewPage() {
             </div>
             <div style={s.fieldGroup}>
               <label style={s.label}>Date:</label>
-              <input type="date" style={s.input} value={date} onChange={e => setDate(e.target.value)} />
+              <StoreThemeDatePicker value={date} onChange={setDate} placeholder="Select date" variant="input" />
             </div>
           </div>
 
@@ -128,19 +129,16 @@ export default function RequisitionNewPage() {
 
                 {/* Product dropdown */}
                 <div style={{ ...s.itemField, flex: 2 }}>
-                  <div style={s.selectWrap}>
-                    <select
-                      style={s.select}
-                      value={item.productId}
-                      onChange={e => updateItem(item.key, 'productId', e.target.value)}
-                    >
-                      <option value="">Select Product</option>
-                      {availableProducts.map(p => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown size={13} style={s.chevron} />
-                  </div>
+                  <StoreThemeDropdown
+                    value={item.productId}
+                    onChange={(nextProductId) => updateItem(item.key, 'productId', String(nextProductId))}
+                    variant="input"
+                    placeholder="Select Product"
+                    options={[
+                      { value: '', label: 'Select Product' },
+                      ...availableProducts.map((p) => ({ value: String(p.id), label: p.name })),
+                    ]}
+                  />
                 </div>
 
                 {/* Sub-Category / Type (auto from product) */}
@@ -302,9 +300,6 @@ const s = {
   colHeaderRow: { display: 'flex', gap: 10, marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid #d4dfd4' },
   productRow: { display: 'flex', gap: 10, marginBottom: 10, alignItems: 'center' },
   itemField: { display: 'flex', flexDirection: 'column', flex: 1 },
-  selectWrap: { position: 'relative' },
-  select: { appearance: 'none', WebkitAppearance: 'none', background: '#ffffff', border: '1px solid #d4dfd4', borderRadius: 10, padding: '9px 30px 9px 12px', fontSize: 13, color: '#1f2f21', outline: 'none', width: '100%', cursor: 'pointer', fontFamily: 'inherit' },
-  chevron: { position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#7a8a7a' },
   typeDisplay: { display: 'flex', alignItems: 'center', height: 40, paddingLeft: 4 },
   subCatBadge: { display: 'inline-block', background: '#eef2ee', border: '1px solid #d4dfd4', color: '#2d7a33', borderRadius: 40, padding: '2px 9px', fontSize: 11.5, fontWeight: 700 },
   catBadge: { display: 'inline-block', background: '#e8f0e8', border: '1px solid #d4dfd4', color: '#1f7a2b', borderRadius: 40, padding: '2px 9px', fontSize: 11.5, fontWeight: 700 },

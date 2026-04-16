@@ -55,6 +55,7 @@ function DropdownField({
   placeholder,
   disabled = false,
   compact = false,
+  wrapStyle = {},
 }) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef(null)
@@ -80,9 +81,10 @@ function DropdownField({
   }, [])
 
   return (
-    <div ref={rootRef} style={s.dropdownWrap}>
+    <div ref={rootRef} style={{ ...s.dropdownWrap, ...wrapStyle }} className="store-theme-dropdown">
       <button
         type="button"
+        className="store-theme-dropdown-trigger"
         style={{
           ...s.dropdownTrigger,
           ...(compact ? s.dropdownTriggerCompact : {}),
@@ -101,13 +103,14 @@ function DropdownField({
       </button>
 
       {open && !disabled ? (
-        <div style={s.dropdownMenu}>
+        <div style={s.dropdownMenu} className="store-theme-dropdown-menu">
           {options.map((option) => {
             const active = String(option.value) === String(value)
             return (
               <button
                 key={String(option.value)}
                 type="button"
+                className={`store-theme-dropdown-item${active ? ' store-theme-dropdown-item-active' : ''}`}
                 style={{ ...s.dropdownItem, ...(active ? s.dropdownItemActive : {}) }}
                 onClick={() => {
                   onChange(option.value)
@@ -547,13 +550,27 @@ function EditModal({ record, suppliers, brands, categories, products, units, onC
             <div><label style={s.label}>Receive Date</label><input style={s.input} value={form.receiveDate} onChange={e => setForm(f => ({ ...f, receiveDate: e.target.value }))} /></div>
             <div>
               <label style={s.label}>Supplier</label>
-              <select style={s.input} value={form.supplierId} onChange={e => { const sup = suppliers.find(x => x.id === Number(e.target.value)); setForm(f => ({ ...f, supplierId: sup.id, supplierName: sup.name, address: sup.address })) }}>
-                {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
+              <DropdownField
+                value={form.supplierId}
+                onChange={(nextValue) => {
+                  const sup = suppliers.find((x) => x.id === Number(nextValue))
+                  if (!sup) return
+                  setForm((f) => ({ ...f, supplierId: sup.id, supplierName: sup.name, address: sup.address }))
+                }}
+                placeholder="Select supplier"
+                options={suppliers.map((entry) => ({ value: entry.id, label: entry.name }))}
+                wrapStyle={{ minWidth: 0 }}
+              />
             </div>
             <div>
               <label style={s.label}>Status</label>
-              <select style={s.input} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}><option>Received</option><option>Pending</option></select>
+              <DropdownField
+                value={form.status}
+                onChange={(nextValue) => setForm((f) => ({ ...f, status: nextValue }))}
+                placeholder="Status"
+                options={['Received', 'Pending'].map((entry) => ({ value: entry, label: entry }))}
+                wrapStyle={{ minWidth: 0 }}
+              />
             </div>
             <div style={{ gridColumn: '1/-1' }}><label style={s.label}>Address</label><textarea style={{ ...s.input, height: 60, resize: 'vertical' }} value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} /></div>
             <div style={{ gridColumn: '1/-1' }}><label style={s.label}>Note</label><textarea style={{ ...s.input, height: 55, resize: 'vertical' }} value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} /></div>
@@ -569,11 +586,58 @@ function EditModal({ record, suppliers, brands, categories, products, units, onC
             const catProds = products.filter(p => p.categoryId === Number(item.categoryId))
             return (
               <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 72px 80px 32px', gap: 8, marginBottom: 8, alignItems: 'end' }}>
-                <div><label style={s.label}>Brand</label><select style={s.input} value={item.brandId} onChange={e => updateItem(i, 'brandId', e.target.value)}><option value="">Brand</option>{brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select></div>
-                <div><label style={s.label}>Category</label><select style={s.input} value={item.categoryId} onChange={e => updateItem(i, 'categoryId', e.target.value)}><option value="">Category</option>{brandCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-                <div><label style={s.label}>Product</label><select style={s.input} value={item.productId} onChange={e => updateItem(i, 'productId', e.target.value)}><option value="">Product</option>{catProds.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+                <div>
+                  <label style={s.label}>Brand</label>
+                  <DropdownField
+                    value={item.brandId}
+                    onChange={(nextValue) => updateItem(i, 'brandId', nextValue)}
+                    placeholder="Brand"
+                    options={[
+                      { value: '', label: 'Brand' },
+                      ...brands.map((entry) => ({ value: entry.id, label: entry.name })),
+                    ]}
+                    wrapStyle={{ minWidth: 0 }}
+                  />
+                </div>
+                <div>
+                  <label style={s.label}>Category</label>
+                  <DropdownField
+                    value={item.categoryId}
+                    onChange={(nextValue) => updateItem(i, 'categoryId', nextValue)}
+                    placeholder="Category"
+                    options={[
+                      { value: '', label: 'Category' },
+                      ...brandCats.map((entry) => ({ value: entry.id, label: entry.name })),
+                    ]}
+                    disabled={!item.brandId}
+                    wrapStyle={{ minWidth: 0 }}
+                  />
+                </div>
+                <div>
+                  <label style={s.label}>Product</label>
+                  <DropdownField
+                    value={item.productId}
+                    onChange={(nextValue) => updateItem(i, 'productId', nextValue)}
+                    placeholder="Product"
+                    options={[
+                      { value: '', label: 'Product' },
+                      ...catProds.map((entry) => ({ value: entry.id, label: entry.name })),
+                    ]}
+                    disabled={!item.categoryId}
+                    wrapStyle={{ minWidth: 0 }}
+                  />
+                </div>
                 <div><label style={s.label}>Qty</label><input style={s.input} type="number" value={item.quantity} onChange={e => updateItem(i, 'quantity', e.target.value)} /></div>
-                <div><label style={s.label}>Unit</label><select style={s.input} value={item.unit} onChange={e => updateItem(i, 'unit', e.target.value)}>{units.map(u => <option key={u}>{u}</option>)}</select></div>
+                <div>
+                  <label style={s.label}>Unit</label>
+                  <DropdownField
+                    value={item.unit}
+                    onChange={(nextValue) => updateItem(i, 'unit', nextValue)}
+                    placeholder="Unit"
+                    options={units.map((entry) => ({ value: entry, label: entry }))}
+                    wrapStyle={{ minWidth: 0 }}
+                  />
+                </div>
                 <button style={s.removeItemBtn} onClick={() => setForm(f => ({ ...f, items: f.items.filter((_, idx) => idx !== i) }))}><X size={13} /></button>
               </div>
             )
