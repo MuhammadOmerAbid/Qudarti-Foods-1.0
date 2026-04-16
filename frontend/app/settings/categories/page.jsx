@@ -116,7 +116,7 @@ export default function CategoriesPage() {
       <SettingsPageShell title="Categories" subtitle="Manage your categories"
         onAdd={() => { setAdding(true); setNewName('') }} onRefresh={load}
         filterValue={filter} onFilterChange={setFilter}
-        addLabel="+ Add Category" canEdit={canEdit}>
+        addLabel="Add Category" canEdit={canEdit}>
         {loading
           ? <div style={{ padding: 40, textAlign: 'center', color: settingsTheme.textSubtle }}>Loading...</div>
           : <SettingsTable columns={[

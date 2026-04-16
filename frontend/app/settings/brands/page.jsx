@@ -148,7 +148,7 @@ export default function BrandsPage() {
         onRefresh={load}
         filterValue={filter}
         onFilterChange={setFilter}
-        addLabel="+ Add Brand"
+        addLabel="Add Brand"
         canEdit={isSuperuser}
       >
         {loading ? (

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { useAuthStore } from '@/store/authStore'
 import { settingsTheme } from '@/components/settings/SettingsShared'
-import { Tag, Grid3X3, Package, Users, BookOpen, Calculator, ChevronRight, Shield } from 'lucide-react'
+import { Tag, Grid3X3, Package, Users, BookOpen, Calculator, ChevronRight, Shield, Ruler, Box, Truck, CheckSquare } from 'lucide-react'
 
 const SETTING_CARDS = [
   {
@@ -26,9 +26,45 @@ const SETTING_CARDS = [
     bg: '#eaf4ea',
   },
   {
+    id: 'units',
+    label: 'Units',
+    description: 'Manage measurement units (KG, Litre, Carton…)',
+    icon: Ruler,
+    path: '/settings/units',
+    color: '#2d7a33',
+    bg: '#eaf4ea',
+  },
+  {
+    id: 'packaging',
+    label: 'Packaging',
+    description: 'Manage packaging types (Box, Bag, Carton…)',
+    icon: Box,
+    path: '/settings/packaging',
+    color: '#2d7a33',
+    bg: '#eaf4ea',
+  },
+  {
+    id: 'supplier',
+    label: 'Suppliers',
+    description: 'Manage suppliers and their contact details',
+    icon: Truck,
+    path: '/settings/supplier',
+    color: '#2d7a33',
+    bg: '#eaf4ea',
+  },
+  {
+    id: 'finished-good-products',
+    label: 'Finished Good Products',
+    description: 'Product master for finished goods and production orders',
+    icon: CheckSquare,
+    path: '/settings/finished-good-products',
+    color: '#2d7a33',
+    bg: '#eaf4ea',
+  },
+  {
     id: 'products',
     label: 'Products',
-    description: 'Add and manage products',
+    description: 'Add and manage raw material products',
     icon: Package,
     path: '/settings/products',
     color: '#2d7a33',

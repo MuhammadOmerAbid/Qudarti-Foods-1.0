@@ -48,6 +48,10 @@ export default function AppSidebar({ collapsed, setCollapsed }) {
 
   const handleNavigation = path => router.push(path)
   const handleLogout = () => { logout(); router.push('/auth/login') }
+  const isPathActive = (path) => {
+    if (!path) return false
+    return pathname === path || pathname.startsWith(`${path}/`)
+  }
 
   return (
     <aside
@@ -84,7 +88,7 @@ export default function AppSidebar({ collapsed, setCollapsed }) {
       {!collapsed && <p style={s.sectionLabel}>MENU</p>}
       <nav style={{ ...s.nav, alignItems: collapsed ? 'center' : 'stretch' }}>
         {visibleMenuItems.map(item => {
-          const active = pathname === item.path
+          const active = isPathActive(item.path)
           const Icon = item.icon
           return (
             <div key={item.id} style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: collapsed ? 'center' : 'flex-start' }}>
@@ -137,7 +141,7 @@ export default function AppSidebar({ collapsed, setCollapsed }) {
       {collapsed && <div style={{ height: 12 }} />}
       <nav style={{ ...s.nav, alignItems: collapsed ? 'center' : 'stretch' }}>
         {NAV_ITEMS_GENERAL.map(item => {
-          const active = pathname === item.path
+          const active = isPathActive(item.path)
           const Icon = item.icon
           const isLogout = item.isLogout
           return (
