@@ -81,7 +81,7 @@ export default function AccountSidebar({ collapsed, setCollapsed }) {
           )}
         </button>
         {!collapsed && (
-          <span style={s.logoName}>Accounts</span>
+          <span style={s.logoName}>Qudarti Food Processors (SMC-PVT)LTD.</span>
         )}
       </div>
 
@@ -217,8 +217,8 @@ const s = {
     position: 'relative',
   },
   logoBtn: {
-    width: 32,
-    height: 32,
+    width: 46,
+    height: 46,
     border: 'none',
     borderRadius: '999px',
     backgroundColor: '#d4dfd4',
@@ -231,15 +231,18 @@ const s = {
     transition: 'all 0.2s',
   },
   logoImg: {
-    width: 20,
-    height: 20,
+    width: 31,
+    height: 31,
     objectFit: 'contain',
   },
   logoName: {
-    fontSize: 20,
-    fontWeight: 800,
+    fontSize: 12.5,
+    fontWeight: 700,
     color: '#1a3d1f',
-    letterSpacing: '-0.5px',
+    lineHeight: 1.28,
+    letterSpacing: '0',
+    whiteSpace: 'normal',
+    wordBreak: 'break-word',
     flex: 1,
   },
   sectionLabel: {
