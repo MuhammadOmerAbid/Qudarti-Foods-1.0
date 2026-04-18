@@ -4,25 +4,52 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { useAuthStore } from '@/store/authStore'
-import { suppliersApi } from '@/lib/api/endpoints'
+import { finishedGoodsApi } from '@/lib/api/endpoints'
 import {
   SettingsPageShell, SettingsTable, Toggle,
   ActionButtons, ConfirmDelete, Toast, settingsTheme,
 } from '@/components/settings/SettingsShared'
 import { Check, X } from 'lucide-react'
 
+const todayISO = () => new Date().toISOString().split('T')[0]
+
+const normalizeEntry = (entry) => {
+  const meta = Array.isArray(entry.products)
+    ? (entry.products[0] || {})
+    : (entry.products && typeof entry.products === 'object' ? entry.products : {})
+
+  const statusValue = entry.status || 'Completed'
+  const isActive = String(statusValue).toLowerCase() !== 'inactive'
+
+  return {
+    id: entry.id,
+    name: entry.brand || '',
+    code: meta.code || '',
+    description: meta.description || '',
+    isActive,
+    statusValue,
+    date: entry.date || todayISO(),
+  }
+}
+
 export default function FinishedGoodProductsPage() {
   const router = useRouter()
   const { user } = useAuthStore()
   const isSuperuser = user?.role === 'superuser'
-  const canEdit = isSuperuser || user?.permissions?.includes('suppliers_edit')
-  const canDelete = isSuperuser || user?.permissions?.includes('suppliers_delete')
+  const canEdit = isSuperuser
+    || user?.permissions?.includes('finished-good-products_edit')
+    || user?.permissions?.includes('finished_goods_edit')
+    || user?.permissions?.includes('products_edit')
+  const canDelete = isSuperuser
+    || user?.permissions?.includes('finished-good-products_delete')
+    || user?.permissions?.includes('finished_goods_delete')
+    || user?.permissions?.includes('products_delete')
 
   const [items, setItems] = useState([])
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(false)
   const [editId, setEditId] = useState(null)
-  const [editForm, setEditForm] = useState({ name: '', contact: '', address: '' })
+  const [editForm, setEditForm] = useState({ name: '', code: '', description: '' })
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [toast, setToast] = useState(null)
 
@@ -31,8 +58,9 @@ export default function FinishedGoodProductsPage() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await suppliersApi.list()
-      setItems(Array.isArray(data) ? data : data?.results || [])
+      const data = await finishedGoodsApi.list()
+      const records = Array.isArray(data) ? data : data?.results || []
+      setItems(records.map(normalizeEntry))
     } catch {
       showToast('Failed to load finished good products', 'error')
     } finally {
@@ -46,14 +74,14 @@ export default function FinishedGoodProductsPage() {
     setEditId(item.id)
     setEditForm({
       name: item.name || '',
-      contact: item.contact || '',
-      address: item.address || '',
+      code: item.code || '',
+      description: item.description || '',
     })
   }
 
   const cancelEdit = () => {
     setEditId(null)
-    setEditForm({ name: '', contact: '', address: '' })
+    setEditForm({ name: '', code: '', description: '' })
   }
 
   const saveEdit = async () => {
@@ -61,11 +89,14 @@ export default function FinishedGoodProductsPage() {
       showToast('Name is required', 'error')
       return
     }
+
     try {
-      await suppliersApi.update(editId, {
-        name: editForm.name.trim(),
-        contact: editForm.contact.trim(),
-        address: editForm.address.trim(),
+      await finishedGoodsApi.update(editId, {
+        brand: editForm.name.trim(),
+        products: [{
+          code: editForm.code.trim(),
+          description: editForm.description.trim(),
+        }],
       })
       showToast('Entry updated')
       cancelEdit()
@@ -77,8 +108,10 @@ export default function FinishedGoodProductsPage() {
 
   const handleToggle = async (item) => {
     if (!canEdit) return
+
+    const nextStatus = item.isActive ? 'Inactive' : 'Completed'
     try {
-      await suppliersApi.update(item.id, { status: !item.status })
+      await finishedGoodsApi.update(item.id, { status: nextStatus })
       load()
     } catch {
       showToast('Failed to update status', 'error')
@@ -87,7 +120,7 @@ export default function FinishedGoodProductsPage() {
 
   const handleDelete = async () => {
     try {
-      await suppliersApi.delete(deleteTarget.id)
+      await finishedGoodsApi.delete(deleteTarget.id)
       setDeleteTarget(null)
       showToast('Entry deleted')
       load()
@@ -97,8 +130,8 @@ export default function FinishedGoodProductsPage() {
   }
 
   const filtered = items.filter((entry) => {
-    if (filter === 'active') return !!entry.status
-    if (filter === 'inactive') return !entry.status
+    if (filter === 'active') return entry.isActive
+    if (filter === 'inactive') return !entry.isActive
     return true
   })
 
@@ -126,26 +159,26 @@ export default function FinishedGoodProductsPage() {
         <td style={{ ...td, color: settingsTheme.textMuted }}>
           {isEditing ? (
             <input
-              value={editForm.contact}
-              onChange={(e) => setEditForm((prev) => ({ ...prev, contact: e.target.value }))}
+              value={editForm.code}
+              onChange={(e) => setEditForm((prev) => ({ ...prev, code: e.target.value }))}
               style={s.cellInput}
-              placeholder="Code / Contact"
+              placeholder="Code"
             />
-          ) : (item.contact || '—')}
+          ) : (item.code || '-')}
         </td>
         <td style={{ ...td, color: settingsTheme.textMuted }}>
           {isEditing ? (
             <input
-              value={editForm.address}
-              onChange={(e) => setEditForm((prev) => ({ ...prev, address: e.target.value }))}
+              value={editForm.description}
+              onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
               style={s.cellInput}
               placeholder="Description"
             />
-          ) : (item.address || '—')}
+          ) : (item.description || '-')}
         </td>
         <td style={td}>
           <Toggle
-            checked={!!item.status}
+            checked={item.isActive}
             disabled={!canEdit || isEditing}
             onChange={() => handleToggle(item)}
           />
@@ -191,8 +224,8 @@ export default function FinishedGoodProductsPage() {
           <SettingsTable
             columns={[
               { key: 'name', label: 'Name', align: 'center' },
-              { key: 'contact', label: 'Code / Contact', align: 'center' },
-              { key: 'address', label: 'Description', align: 'center' },
+              { key: 'code', label: 'Code', align: 'center' },
+              { key: 'description', label: 'Description', align: 'center' },
               { key: 'status', label: 'Status', align: 'center' },
               { key: 'actions', label: 'Actions', align: 'center' },
             ]}

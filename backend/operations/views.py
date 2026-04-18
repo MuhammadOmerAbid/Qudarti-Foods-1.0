@@ -111,6 +111,13 @@ class SizeViewSet(BaseModelViewSet):
   queryset = Size.objects.select_related('product').all().order_by('name')
   serializer_class = SizeSerializer
 
+  def get_queryset(self):
+    queryset = super().get_queryset()
+    include_product = (self.request.query_params.get('include_product') or '').strip().lower()
+    if include_product in ('1', 'true', 'yes'):
+      return queryset
+    return queryset.filter(product__isnull=True)
+
 
 class PackingViewSet(BaseModelViewSet):
   queryset = Packing.objects.all().order_by('name')

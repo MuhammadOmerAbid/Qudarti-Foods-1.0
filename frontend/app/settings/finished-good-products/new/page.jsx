@@ -4,21 +4,26 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { useAuthStore } from '@/store/authStore'
-import { suppliersApi } from '@/lib/api/endpoints'
+import { finishedGoodsApi } from '@/lib/api/endpoints'
 import { settingsTheme } from '@/components/settings/SettingsShared'
 import { ArrowLeft, Save, Shield } from 'lucide-react'
+
+const todayISO = () => new Date().toISOString().split('T')[0]
 
 export default function FinishedGoodProductsNewPage() {
   const router = useRouter()
   const { user } = useAuthStore()
 
   const isSuperuser = user?.role === 'superuser'
-  const canEdit = isSuperuser || user?.permissions?.includes('suppliers_edit')
+  const canEdit = isSuperuser
+    || user?.permissions?.includes('finished-good-products_edit')
+    || user?.permissions?.includes('finished_goods_edit')
+    || user?.permissions?.includes('products_edit')
 
   const [saving, setSaving] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [errors, setErrors] = useState({})
-  const [form, setForm] = useState({ name: '', contact: '', address: '' })
+  const [form, setForm] = useState({ name: '', code: '', description: '' })
 
   const setField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -38,10 +43,14 @@ export default function FinishedGoodProductsNewPage() {
     setSaving(true)
     setErrorMsg('')
     try {
-      await suppliersApi.create({
-        name: form.name.trim(),
-        contact: form.contact.trim(),
-        address: form.address.trim(),
+      await finishedGoodsApi.create({
+        brand: form.name.trim(),
+        date: todayISO(),
+        status: 'Completed',
+        products: [{
+          code: form.code.trim(),
+          description: form.description.trim(),
+        }],
       })
       router.push('/settings/finished-good-products')
     } catch {
@@ -97,13 +106,13 @@ export default function FinishedGoodProductsNewPage() {
           </div>
 
           <div style={s.fieldWrap}>
-            <label style={s.label}>Code / Contact</label>
+            <label style={s.label}>Code</label>
             <input
               type="text"
               style={s.input}
-              value={form.contact}
+              value={form.code}
               placeholder="Enter code or reference"
-              onChange={(e) => setField('contact', e.target.value)}
+              onChange={(e) => setField('code', e.target.value)}
             />
           </div>
 
@@ -112,9 +121,9 @@ export default function FinishedGoodProductsNewPage() {
             <input
               type="text"
               style={s.input}
-              value={form.address}
+              value={form.description}
               placeholder="Description"
-              onChange={(e) => setField('address', e.target.value)}
+              onChange={(e) => setField('description', e.target.value)}
             />
           </div>
 

@@ -43,11 +43,34 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class SizeSerializer(serializers.ModelSerializer):
-  product_name = serializers.CharField(source='product.name', read_only=True)
+  product_name = serializers.CharField(source='product.name', read_only=True, allow_null=True)
 
   class Meta:
     model = Size
     fields = '__all__'
+
+  def validate(self, attrs):
+    name = (attrs.get('name') or getattr(self.instance, 'name', '')).strip()
+    product = attrs.get('product', getattr(self.instance, 'product', None))
+
+    if not name:
+      raise serializers.ValidationError({'name': 'This field is required.'})
+
+    attrs['name'] = name
+
+    queryset = Size.objects.all()
+    if self.instance:
+      queryset = queryset.exclude(pk=self.instance.pk)
+
+    if product is None:
+      exists = queryset.filter(product__isnull=True, name__iexact=name).exists()
+    else:
+      exists = queryset.filter(product=product, name__iexact=name).exists()
+
+    if exists:
+      raise serializers.ValidationError({'name': 'This unit already exists.'})
+
+    return attrs
 
 
 class PackingSerializer(serializers.ModelSerializer):
