@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ChevronDown, Plus, Save, X } from 'lucide-react'
+import { ArrowLeft, Plus, Save, X } from 'lucide-react'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { incrementStoreEntries } from '@/lib/storeEntryTracker'
 import {
@@ -12,6 +12,7 @@ import {
   PACKINGS,
   getWordCount,
 } from '@/components/store/shared/StoreShared'
+import { StoreThemeDatePicker, StoreThemeDropdown } from '@/components/store/shared/StoreThemeControls'
 
 const FINISHED_GOODS_DRAFT_KEY = 'store.finishedGoodsDrafts'
 
@@ -86,27 +87,25 @@ export default function FinishedGoodsNewPage() {
           <div style={s.formRow}>
             <div style={s.formCol}>
               <label style={s.label}>Brand</label>
-              <div style={s.selectWrap}>
-                <select
-                  style={{ ...s.select, ...(errors.brand ? s.inputError : {}) }}
-                  value={brand}
-                  onChange={(e) => {
-                    setBrand(e.target.value)
-                    setErrors((prev) => ({ ...prev, brand: undefined }))
-                  }}
-                >
-                  <option value="">Select brand</option>
-                  {BRANDS.map((entry) => (
-                    <option key={entry}>{entry}</option>
-                  ))}
-                </select>
-                <ChevronDown size={13} style={s.chevron} />
-              </div>
+              <StoreThemeDropdown
+                value={brand}
+                onChange={(nextBrand) => {
+                  setBrand(nextBrand)
+                  setErrors((prev) => ({ ...prev, brand: undefined }))
+                }}
+                hasError={Boolean(errors.brand)}
+                variant="input"
+                placeholder="Select brand"
+                options={[
+                  { value: '', label: 'Select brand' },
+                  ...BRANDS.map((entry) => ({ value: entry, label: entry })),
+                ]}
+              />
               {errors.brand ? <p style={s.errorText}>{errors.brand}</p> : null}
             </div>
             <div style={{ ...s.formCol, maxWidth: 240 }}>
               <label style={s.label}>Date</label>
-              <input type="date" style={s.input} value={date} onChange={(e) => setDate(e.target.value)} />
+              <StoreThemeDatePicker value={date} onChange={setDate} placeholder="Select date" variant="input" />
             </div>
           </div>
 
@@ -135,37 +134,31 @@ export default function FinishedGoodsNewPage() {
               <div style={s.formRow}>
                 <div style={s.formCol}>
                   <label style={s.label}>Product</label>
-                  <div style={s.selectWrap}>
-                    <select
-                      style={s.select}
-                      value={item.product}
-                      onChange={(e) => updateItem(idx, 'product', e.target.value)}
-                    >
-                      <option value="">Select product</option>
-                      {(CATEGORIES[brand] || [])
+                  <StoreThemeDropdown
+                    value={item.product}
+                    onChange={(nextProduct) => updateItem(idx, 'product', nextProduct)}
+                    variant="input"
+                    placeholder="Select product"
+                    options={[
+                      { value: '', label: 'Select product' },
+                      ...(CATEGORIES[brand] || [])
                         .flatMap((categoryName) => PRODUCTS[categoryName] || [])
-                        .map((entry) => (
-                          <option key={entry}>{entry}</option>
-                        ))}
-                    </select>
-                    <ChevronDown size={13} style={s.chevron} />
-                  </div>
+                        .map((entry) => ({ value: entry, label: entry })),
+                    ]}
+                  />
                 </div>
                 <div style={s.formCol}>
                   <label style={s.label}>Packing</label>
-                  <div style={s.selectWrap}>
-                    <select
-                      style={s.select}
-                      value={item.packing}
-                      onChange={(e) => updateItem(idx, 'packing', e.target.value)}
-                    >
-                      <option value="">Select packing</option>
-                      {PACKINGS.map((entry) => (
-                        <option key={entry}>{entry}</option>
-                      ))}
-                    </select>
-                    <ChevronDown size={13} style={s.chevron} />
-                  </div>
+                  <StoreThemeDropdown
+                    value={item.packing}
+                    onChange={(nextPacking) => updateItem(idx, 'packing', nextPacking)}
+                    variant="input"
+                    placeholder="Select packing"
+                    options={[
+                      { value: '', label: 'Select packing' },
+                      ...PACKINGS.map((entry) => ({ value: entry, label: entry })),
+                    ]}
+                  />
                 </div>
                 <div style={{ ...s.formCol, maxWidth: 140 }}>
                   <label style={s.label}>Cartons</label>
@@ -288,34 +281,6 @@ const s = {
     fontSize: 13,
     outline: 'none',
     boxSizing: 'border-box',
-  },
-  selectWrap: {
-    position: 'relative',
-    width: '100%',
-  },
-  select: {
-    width: '100%',
-    appearance: 'none',
-    WebkitAppearance: 'none',
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    borderColor: '#d4dfd4',
-    borderRadius: 10,
-    background: '#ffffff',
-    color: '#1f2f21',
-    padding: '9px 30px 9px 11px',
-    fontSize: 13,
-    outline: 'none',
-    boxSizing: 'border-box',
-    cursor: 'pointer',
-  },
-  chevron: {
-    position: 'absolute',
-    right: 10,
-    top: '50%',
-    transform: 'translateY(-50%)',
-    pointerEvents: 'none',
-    color: '#7a8a7a',
   },
   textarea: {
     width: '100%',

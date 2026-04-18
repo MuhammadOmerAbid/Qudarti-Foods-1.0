@@ -1,9 +1,10 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Search, Plus, FileText, Pencil, Trash2, ChevronDown, RefreshCw, Download, X, History, Printer } from 'lucide-react'
+import { Search, Plus, FileText, Pencil, Trash2, RefreshCw, Download, X, History, Printer } from 'lucide-react'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { StoreThemeDatePicker } from '@/components/store/shared/StoreThemeControls'
 
 export const BRANDS = ['Soghaat', 'Raja', 'Handi', 'Qudarti', 'General']
 
@@ -419,8 +420,23 @@ export function ReportModal({ title, data, columns, dateKey, onClose }) {
 
           {dateKey ? (
             <>
-              <input type="date" style={ui.inputDate} value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
-              <input type="date" style={ui.inputDate} value={toDate} onChange={(e) => setToDate(e.target.value)} />
+              <div style={{ minWidth: 170 }}>
+                <StoreThemeDatePicker
+                  value={fromDate}
+                  onChange={setFromDate}
+                  placeholder="From date"
+                  variant="pill"
+                />
+              </div>
+              <div style={{ minWidth: 170 }}>
+                <StoreThemeDatePicker
+                  value={toDate}
+                  onChange={setToDate}
+                  placeholder="To date"
+                  variant="pill"
+                  alignRight
+                />
+              </div>
             </>
           ) : null}
 

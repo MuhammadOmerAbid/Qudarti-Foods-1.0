@@ -14,6 +14,7 @@ import {
   SectionHeader,
   ui,
 } from '@/components/store/shared/StoreShared'
+import { StoreThemeDropdown } from '@/components/store/shared/StoreThemeControls'
 export default function InventoryPage({ isSuperUser = true }) {
   const [items, setItems] = useState(INVENTORY_INITIAL)
   const [brand, setBrand] = useState('All Brands')
@@ -85,18 +86,26 @@ export default function InventoryPage({ isSuperUser = true }) {
       />
 
       <div style={ui.filtersRow}>
-        <select value={brand} onChange={(e) => setBrand(e.target.value)} style={ui.select}>
-          <option>All Brands</option>
-          {BRANDS.map((entry) => (
-            <option key={entry}>{entry}</option>
-          ))}
-        </select>
-        <select value={category} onChange={(e) => setCategory(e.target.value)} style={ui.select}>
-          <option>All Categories</option>
-          {['Seal', 'Bottle', 'Sticker', 'Jar', 'Label'].map((entry) => (
-            <option key={entry}>{entry}</option>
-          ))}
-        </select>
+        <div style={{ minWidth: 170 }}>
+          <StoreThemeDropdown
+            value={brand}
+            onChange={setBrand}
+            compact
+            variant="pill"
+            placeholder="All Brands"
+            options={['All Brands', ...BRANDS].map((entry) => ({ value: entry, label: entry }))}
+          />
+        </div>
+        <div style={{ minWidth: 170 }}>
+          <StoreThemeDropdown
+            value={category}
+            onChange={setCategory}
+            compact
+            variant="pill"
+            placeholder="All Categories"
+            options={['All Categories', 'Seal', 'Bottle', 'Sticker', 'Jar', 'Label'].map((entry) => ({ value: entry, label: entry }))}
+          />
+        </div>
       </div>
 
       <div style={ui.searchWrap}>

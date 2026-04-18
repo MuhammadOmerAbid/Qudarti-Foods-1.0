@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ChevronDown, Plus, Save, X } from 'lucide-react'
+import { ArrowLeft, Plus, Save, X } from 'lucide-react'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { PACKINGS, PRODUCTS } from '@/components/store/shared/StoreShared'
 import { incrementStoreEntries } from '@/lib/storeEntryTracker'
+import { StoreThemeDatePicker, StoreThemeDropdown } from '@/components/store/shared/StoreThemeControls'
 
 const PRODUCTION_ORDER_DRAFT_KEY = 'store.productionOrderDrafts'
 
@@ -106,7 +107,7 @@ export default function ProductionOrderNewPage() {
             </div>
             <div style={{ ...s.formCol, maxWidth: 240 }}>
               <label style={s.label}>Date</label>
-              <input type="date" style={s.input} value={date} onChange={(e) => setDate(e.target.value)} />
+              <StoreThemeDatePicker value={date} onChange={setDate} placeholder="Select date" variant="input" />
             </div>
           </div>
 
@@ -135,35 +136,29 @@ export default function ProductionOrderNewPage() {
               <div style={s.formRow}>
                 <div style={s.formCol}>
                   <label style={s.label}>Goods</label>
-                  <div style={s.selectWrap}>
-                    <select
-                      style={s.select}
-                      value={item.goods}
-                      onChange={(e) => updateItem(idx, 'goods', e.target.value)}
-                    >
-                      <option value="">Select goods</option>
-                      {goodsOptions.map((entry) => (
-                        <option key={entry}>{entry}</option>
-                      ))}
-                    </select>
-                    <ChevronDown size={13} style={s.chevron} />
-                  </div>
+                  <StoreThemeDropdown
+                    value={item.goods}
+                    onChange={(nextValue) => updateItem(idx, 'goods', nextValue)}
+                    variant="input"
+                    placeholder="Select goods"
+                    options={[
+                      { value: '', label: 'Select goods' },
+                      ...goodsOptions.map((entry) => ({ value: entry, label: entry })),
+                    ]}
+                  />
                 </div>
                 <div style={s.formCol}>
                   <label style={s.label}>Packing</label>
-                  <div style={s.selectWrap}>
-                    <select
-                      style={s.select}
-                      value={item.packing}
-                      onChange={(e) => updateItem(idx, 'packing', e.target.value)}
-                    >
-                      <option value="">Select packing</option>
-                      {PACKINGS.map((entry) => (
-                        <option key={entry}>{entry}</option>
-                      ))}
-                    </select>
-                    <ChevronDown size={13} style={s.chevron} />
-                  </div>
+                  <StoreThemeDropdown
+                    value={item.packing}
+                    onChange={(nextValue) => updateItem(idx, 'packing', nextValue)}
+                    variant="input"
+                    placeholder="Select packing"
+                    options={[
+                      { value: '', label: 'Select packing' },
+                      ...PACKINGS.map((entry) => ({ value: entry, label: entry })),
+                    ]}
+                  />
                 </div>
                 <div style={{ ...s.formCol, maxWidth: 180 }}>
                   <label style={s.label}>Cartons</label>
@@ -272,34 +267,6 @@ const s = {
     fontSize: 13,
     outline: 'none',
     boxSizing: 'border-box',
-  },
-  selectWrap: {
-    position: 'relative',
-    width: '100%',
-  },
-  select: {
-    width: '100%',
-    appearance: 'none',
-    WebkitAppearance: 'none',
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    borderColor: '#d4dfd4',
-    borderRadius: 10,
-    background: '#ffffff',
-    color: '#1f2f21',
-    padding: '9px 30px 9px 11px',
-    fontSize: 13,
-    outline: 'none',
-    boxSizing: 'border-box',
-    cursor: 'pointer',
-  },
-  chevron: {
-    position: 'absolute',
-    right: 10,
-    top: '50%',
-    transform: 'translateY(-50%)',
-    pointerEvents: 'none',
-    color: '#7a8a7a',
   },
   divider: {
     height: 1,

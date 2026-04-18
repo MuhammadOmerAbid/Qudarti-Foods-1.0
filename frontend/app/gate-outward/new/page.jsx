@@ -6,6 +6,7 @@ import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { ArrowUpFromLine, Plus, X, ArrowLeft, Save } from 'lucide-react'
 import { customersApi, finishedGoodsApi, inventoryApi } from '@/lib/api/endpoints'
 import { incrementStoreEntries } from '@/lib/storeEntryTracker'
+import { StoreThemeDatePicker, StoreThemeDropdown } from '@/components/store/shared/StoreThemeControls'
 import {
   CUSTOMERS,
   GATE_OUTWARD_STORAGE_KEY,
@@ -508,14 +509,19 @@ export default function GateOutwardNewPage() {
 
             <div style={s.fieldGroup}>
               <label style={s.label}>Date:</label>
-              <input type="date" style={{ ...s.input, ...(errors.date ? s.inputError : {}) }} value={date} onChange={(e) => setDate(e.target.value)} />
+              <StoreThemeDatePicker
+                value={date}
+                onChange={setDate}
+                placeholder="Select date"
+                variant="input"
+                triggerStyle={errors.date ? s.inputError : {}}
+              />
               {errors.date && <span style={s.errorText}>{errors.date}</span>}
             </div>
 
             <div style={s.fieldGroup}>
               <label style={s.label}>Customer:</label>
-              <select
-                style={{ ...s.input, ...(errors.customer ? s.inputError : {}) }}
+              <StoreThemeDropdown
                 value={customerId}
                 disabled={loadingOptions}
                 onChange={(e) => {
@@ -618,10 +624,16 @@ export default function GateOutwardNewPage() {
                 <div style={s.itemRow}>
                   <div style={s.itemField}>
                     {idx === 0 && <label style={s.label}>Source</label>}
-                    <select style={s.input} value={item.source} onChange={(e) => updateItem(item.key, 'source', e.target.value)}>
-                      <option value="">Source</option>
-                      {SOURCE_OPTIONS.map((entry) => <option key={entry.value} value={entry.value}>{entry.label}</option>)}
-                    </select>
+                    <StoreThemeDropdown
+                      value={item.source}
+                      onChange={(nextSource) => updateItem(item.key, 'source', nextSource)}
+                      variant="input"
+                      placeholder="Source"
+                      options={[
+                        { value: '', label: 'Source' },
+                        ...SOURCES.map((src) => ({ value: src, label: src })),
+                      ]}
+                    />
                   </div>
 
                   <div style={s.itemField}>
@@ -661,9 +673,12 @@ export default function GateOutwardNewPage() {
 
                   <div style={{ ...s.itemField, flex: '0 0 120px' }}>
                     {idx === 0 && <label style={s.label}>Unit</label>}
-                    <select style={s.input} value={item.unit} onChange={(e) => updateItem(item.key, 'unit', e.target.value)}>
-                      {unitOptions.map((entry) => <option key={entry}>{entry}</option>)}
-                    </select>
+                    <StoreThemeDropdown
+                      value={item.unit}
+                      onChange={(nextUnit) => updateItem(item.key, 'unit', nextUnit)}
+                      variant="input"
+                      options={UNITS.map((u) => ({ value: u, label: u }))}
+                    />
                   </div>
 
                   <div style={{ ...s.itemField, flex: '0 0 36px', alignSelf: 'flex-end' }}>

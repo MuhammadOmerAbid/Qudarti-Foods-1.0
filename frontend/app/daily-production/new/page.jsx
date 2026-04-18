@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { incrementStoreEntries } from '@/lib/storeEntryTracker'
 import { ArrowLeft, Save, Plus, X } from 'lucide-react'
+import { StoreThemeDatePicker } from '@/components/store/shared/StoreThemeControls'
 
 const todayISO = () => new Date().toISOString().split('T')[0]
 
@@ -93,7 +94,7 @@ export default function DailyProductionNewPage() {
           <div style={s.dateRow}>
             <div style={s.fieldGroup}>
               <label style={s.label}>Date</label>
-              <input type="date" style={s.input} value={date} onChange={e => setDate(e.target.value)} />
+              <StoreThemeDatePicker value={date} onChange={setDate} placeholder="Select date" variant="input" />
             </div>
           </div>
 

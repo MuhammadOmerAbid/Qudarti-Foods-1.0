@@ -17,6 +17,7 @@ import {
   SectionHeader,
   ui,
 } from '@/components/store/shared/StoreShared'
+import { StoreThemeDatePicker, StoreThemeDropdown } from '@/components/store/shared/StoreThemeControls'
 
 const PRODUCTION_ORDER_DRAFT_KEY = 'store.productionOrderDrafts'
 
@@ -211,11 +212,9 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
                   <td style={{ ...ui.td, fontWeight: 700 }}>{item.qty}</td>
                   <td style={ui.td}>{index === 0 ? formatDate(order.date) : ''}</td>
                   <td style={ui.td}>
-                    <select
-                      style={{ ...ui.statusSelect, ...(STATUS_COLORS[item.status] || {}) }}
+                    <StoreThemeDropdown
                       value={item.status}
-                      onChange={(e) => {
-                        const status = e.target.value
+                      onChange={(status) => {
                         setOrders((prev) =>
                           prev.map((entry) =>
                             entry.id === order.id
@@ -229,11 +228,19 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
                           )
                         )
                       }}
-                    >
-                      <option>Pending</option>
-                      <option>In Progress</option>
-                      <option>Completed</option>
-                    </select>
+                      options={['Pending', 'In Progress', 'Completed'].map((entry) => ({ value: entry, label: entry }))}
+                      variant="input"
+                      compact
+                      triggerStyle={{
+                        minWidth: 118,
+                        minHeight: 28,
+                        borderRadius: 999,
+                        padding: '5px 24px 5px 9px',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        ...(STATUS_COLORS[item.status] || {}),
+                      }}
+                    />
                   </td>
                   <td style={{ ...ui.td, textAlign: 'right' }}>
                     {index === 0 ? (
@@ -287,11 +294,11 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
               </div>
               <div style={{ ...ui.formCol, maxWidth: 220 }}>
                 <label style={ui.label}>Date</label>
-                <input
-                  type="date"
-                  style={ui.input}
+                <StoreThemeDatePicker
                   value={editor.date}
-                  onChange={(e) => setEditor((prev) => ({ ...prev, date: e.target.value }))}
+                  onChange={(nextDate) => setEditor((prev) => ({ ...prev, date: nextDate }))}
+                  placeholder="Select date"
+                  variant="input"
                 />
               </div>
             </div>
@@ -322,43 +329,43 @@ export default function ProductionOrderPage({ isSuperUser = true }) {
                 <div style={ui.formRow}>
                   <div style={ui.formCol}>
                     <label style={ui.label}>Goods</label>
-                    <select
-                      style={ui.select}
+                    <StoreThemeDropdown
                       value={item.goods}
-                      onChange={(e) =>
+                      onChange={(nextGoods) =>
                         setEditor((prev) => ({
                           ...prev,
                           items: prev.items.map((entry, index) =>
-                            index === idx ? { ...entry, goods: e.target.value } : entry
+                            index === idx ? { ...entry, goods: nextGoods } : entry
                           ),
                         }))
                       }
-                    >
-                      <option value="">Select goods</option>
-                      {[...new Set(Object.values(PRODUCTS).flat())].map((entry) => (
-                        <option key={entry}>{entry}</option>
-                      ))}
-                    </select>
+                      variant="input"
+                      placeholder="Select goods"
+                      options={[
+                        { value: '', label: 'Select goods' },
+                        ...[...new Set(Object.values(PRODUCTS).flat())].map((entry) => ({ value: entry, label: entry })),
+                      ]}
+                    />
                   </div>
                   <div style={ui.formCol}>
                     <label style={ui.label}>Packing</label>
-                    <select
-                      style={ui.select}
+                    <StoreThemeDropdown
                       value={item.packing}
-                      onChange={(e) =>
+                      onChange={(nextPacking) =>
                         setEditor((prev) => ({
                           ...prev,
                           items: prev.items.map((entry, index) =>
-                            index === idx ? { ...entry, packing: e.target.value } : entry
+                            index === idx ? { ...entry, packing: nextPacking } : entry
                           ),
                         }))
                       }
-                    >
-                      <option value="">Select packing</option>
-                      {PACKINGS.map((entry) => (
-                        <option key={entry}>{entry}</option>
-                      ))}
-                    </select>
+                      variant="input"
+                      placeholder="Select packing"
+                      options={[
+                        { value: '', label: 'Select packing' },
+                        ...PACKINGS.map((entry) => ({ value: entry, label: entry })),
+                      ]}
+                    />
                   </div>
                   <div style={{ ...ui.formCol, maxWidth: 140 }}>
                     <label style={ui.label}>Cartons</label>
