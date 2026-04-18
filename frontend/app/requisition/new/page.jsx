@@ -55,6 +55,7 @@ export default function RequisitionNewPage() {
     setSaving(true)
     try {
       await new Promise(r => setTimeout(r, 700))
+      incrementStoreEntries('goods-requisition')
       router.push('/requisition')
     } catch { setSaving(false) }
   }

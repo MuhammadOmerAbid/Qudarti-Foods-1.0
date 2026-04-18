@@ -72,7 +72,14 @@ class Product(TimeStampedModel):
 
 class Size(TimeStampedModel):
   name = models.CharField(max_length=120)
-  product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='sizes')
+  product = models.ForeignKey(
+    Product,
+    null=True,
+    blank=True,
+    on_delete=models.SET_NULL,
+    related_name='sizes',
+  )
+  status = models.BooleanField(default=True)
 
   class Meta:
     unique_together = ('name', 'product')

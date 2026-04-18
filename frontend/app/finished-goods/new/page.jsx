@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Plus, Save, X } from 'lucide-react'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
+import { incrementStoreEntries } from '@/lib/storeEntryTracker'
 import {
   BRANDS,
   CATEGORIES,
@@ -57,6 +58,7 @@ export default function FinishedGoodsNewPage() {
       const raw = window.sessionStorage.getItem(FINISHED_GOODS_DRAFT_KEY)
       const existing = raw ? JSON.parse(raw) : []
       window.sessionStorage.setItem(FINISHED_GOODS_DRAFT_KEY, JSON.stringify([payload, ...existing]))
+      incrementStoreEntries('finished-goods')
       router.push('/finished-goods')
     } catch {
       setSaving(false)

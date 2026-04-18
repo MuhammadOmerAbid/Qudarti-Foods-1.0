@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
+import { getTodayStoreEntries } from '@/lib/storeEntryTracker'
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
@@ -122,10 +123,20 @@ const PROCESS_FLOW = [
   { label: 'Inventory', path: '/inventory' },
 ]
 
+const ENTRY_TRACKED_MODULES = [
+  'gate-inward',
+  'goods-requisition',
+  'gate-outward',
+  'production-order',
+  'daily-production',
+  'finished-goods',
+]
+
 export default function DashboardPage() {
   const { user, panel, hasPermission } = useAuthStore()
   const router = useRouter()
   const [globalQuery, setGlobalQuery] = useState('')
+  const [todayEntries, setTodayEntries] = useState(0)
 
   const isSuperuser = user?.role === 'superuser'
   const normalizedQuery = globalQuery.trim().toLowerCase()
@@ -140,6 +151,24 @@ export default function DashboardPage() {
     window.addEventListener('panel-global-search', onPanelSearch)
     return () => window.removeEventListener('panel-global-search', onPanelSearch)
   }, [])
+
+  const refreshTodayEntries = useCallback(() => {
+    const allowedModules = ENTRY_TRACKED_MODULES.filter((moduleId) => (
+      isSuperuser || hasPermission(moduleId)
+    ))
+    setTodayEntries(getTodayStoreEntries(allowedModules))
+  }, [hasPermission, isSuperuser])
+
+  useEffect(() => {
+    refreshTodayEntries()
+
+    window.addEventListener('store-entries-updated', refreshTodayEntries)
+    window.addEventListener('focus', refreshTodayEntries)
+    return () => {
+      window.removeEventListener('store-entries-updated', refreshTodayEntries)
+      window.removeEventListener('focus', refreshTodayEntries)
+    }
+  }, [refreshTodayEntries])
 
   const visibleOperations = useMemo(() => {
     return OPERATIONS.filter((item) => {
@@ -176,7 +205,7 @@ export default function DashboardPage() {
   }, [normalizedQuery])
 
   const statCards = [
-    { label: 'Assigned Modules', value: String(visibleOperations.length) },
+    { label: 'Total Entries Today', value: String(todayEntries) },
     { label: 'Quick Entry Screens', value: String(visibleQuickActions.length) },
     { label: 'Account Type', value: isSuperuser ? 'Super User' : 'User' },
     { label: 'Active Panel', value: panel ? panel[0].toUpperCase() + panel.slice(1) : 'Store' },

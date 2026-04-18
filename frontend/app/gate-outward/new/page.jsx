@@ -1,20 +1,144 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { ArrowUpFromLine, Plus, X, ArrowLeft, Save } from 'lucide-react'
+import { customersApi, finishedGoodsApi, inventoryApi } from '@/lib/api/endpoints'
+import { incrementStoreEntries } from '@/lib/storeEntryTracker'
 import { StoreThemeDatePicker, StoreThemeDropdown } from '@/components/store/shared/StoreThemeControls'
 import {
   CUSTOMERS,
   GATE_OUTWARD_STORAGE_KEY,
   INITIAL_GATE_OUTWARD_RECORDS,
   PRODUCTS,
-  SOURCES,
   UNITS,
 } from '@/lib/gateOutwardMock'
 
+const SOURCE_INVENTORY = 'inventory'
+const SOURCE_FINISHED_GOODS = 'finished_goods'
+const MANUAL_CUSTOMER_STORAGE_KEY = 'qf-gate-outward-manual-customers'
+
+const SOURCE_OPTIONS = [
+  { value: SOURCE_INVENTORY, label: 'Inventory' },
+  { value: SOURCE_FINISHED_GOODS, label: 'Finished Goods' },
+]
+
 const todayISO = () => new Date().toISOString().split('T')[0]
+
+const toList = (value) => (Array.isArray(value) ? value : (value?.results || []))
+
+const toNumberOrNull = (value) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+const normalizeCustomer = (entry, idx = 0, prefix = 'customer') => {
+  const name = String(entry?.name || '').trim()
+  if (!name) return null
+
+  const rawId = entry?.id ?? `${prefix}-${idx}`
+  return {
+    id: String(rawId),
+    name,
+    address: String(entry?.address || ''),
+    isManual: Boolean(entry?.isManual),
+  }
+}
+
+const normalizeInventoryProduct = (entry, idx = 0, prefix = 'inv') => {
+  const name = String(entry?.product || entry?.name || '').trim()
+  if (!name) return null
+
+  return {
+    id: `${prefix}-${entry?.id ?? idx}`,
+    source: SOURCE_INVENTORY,
+    name,
+    brand: String(entry?.brand || entry?.brand_name || '').trim(),
+    unit: String(entry?.unit || 'Unit').trim() || 'Unit',
+    available: toNumberOrNull(entry?.quantity ?? entry?.available),
+  }
+}
+
+const normalizeFinishedGoodProduct = (entry, idx = 0, prefix = 'fg') => {
+  const firstMeta = Array.isArray(entry?.products)
+    ? (entry.products[0] || {})
+    : (entry?.products && typeof entry.products === 'object' ? entry.products : {})
+
+  const name = String(
+    entry?.brand
+    || entry?.product_name
+    || firstMeta?.product
+    || firstMeta?.name
+    || firstMeta?.description
+    || ''
+  ).trim()
+  if (!name) return null
+
+  return {
+    id: `${prefix}-${entry?.id ?? idx}`,
+    source: SOURCE_FINISHED_GOODS,
+    name,
+    brand: String(firstMeta?.code || '').trim(),
+    unit: String(entry?.unit || firstMeta?.packing || 'Unit').trim() || 'Unit',
+    available: toNumberOrNull(entry?.quantity ?? firstMeta?.cartons ?? firstMeta?.quantity),
+  }
+}
+
+const mergeCustomers = (...groups) => {
+  const seen = new Set()
+  const merged = []
+
+  groups.flat().forEach((entry) => {
+    if (!entry) return
+    const name = String(entry.name || '').trim()
+    if (!name) return
+
+    const key = name.toLowerCase()
+    if (seen.has(key)) return
+    seen.add(key)
+
+    merged.push({
+      id: String(entry.id),
+      name,
+      address: String(entry.address || ''),
+      isManual: Boolean(entry.isManual),
+    })
+  })
+
+  return merged.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+const uniqueProducts = (items) => {
+  const seen = new Set()
+  const list = []
+
+  items.forEach((entry) => {
+    if (!entry) return
+    const key = `${entry.source}|${entry.name.toLowerCase()}|${(entry.brand || '').toLowerCase()}`
+    if (seen.has(key)) return
+    seen.add(key)
+    list.push(entry)
+  })
+
+  return list
+}
+
+const fallbackCustomers = mergeCustomers(
+  CUSTOMERS.map((entry, idx) => normalizeCustomer(entry, idx, 'mock-customer')).filter(Boolean)
+)
+
+const fallbackInventoryProducts = uniqueProducts(
+  PRODUCTS.map((entry, idx) => normalizeInventoryProduct(entry, idx, 'mock-inv')).filter(Boolean)
+)
+
+const fallbackFinishedGoodsProducts = uniqueProducts(
+  PRODUCTS.map((entry, idx) => normalizeFinishedGoodProduct(
+    { id: entry.id, brand: entry.name, unit: entry.unit, quantity: entry.available, products: [{ code: entry.brand }] },
+    idx,
+    'mock-fg'
+  )).filter(Boolean)
+)
 
 const blankItem = () => ({
   key: Date.now() + Math.random(),
@@ -42,6 +166,35 @@ function saveRecords(next) {
   window.localStorage.setItem(GATE_OUTWARD_STORAGE_KEY, JSON.stringify(next))
 }
 
+function loadManualCustomers() {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = window.localStorage.getItem(MANUAL_CUSTOMER_STORAGE_KEY)
+    if (!raw) return []
+
+    const parsed = JSON.parse(raw)
+    const normalized = toList(parsed)
+      .map((entry, idx) => normalizeCustomer({ ...entry, isManual: true }, idx, 'manual-customer'))
+      .filter(Boolean)
+      .map((entry) => ({ ...entry, isManual: true }))
+
+    return mergeCustomers(normalized).filter((entry) => entry.isManual)
+  } catch {
+    return []
+  }
+}
+
+function saveManualCustomers(list) {
+  if (typeof window === 'undefined') return
+  const safe = toList(list).map((entry) => ({
+    id: String(entry.id),
+    name: String(entry.name || '').trim(),
+    address: String(entry.address || ''),
+    isManual: true,
+  }))
+  window.localStorage.setItem(MANUAL_CUSTOMER_STORAGE_KEY, JSON.stringify(safe))
+}
+
 function nextGoNo(records) {
   const maxNum = records.reduce((max, r) => {
     const n = Number(String(r.goNo || '').replace(/\D/g, ''))
@@ -64,6 +217,7 @@ export default function GateOutwardNewPage() {
   const [date, setDate] = useState(todayISO())
   const [customerId, setCustomerId] = useState('')
   const [address, setAddress] = useState('')
+  const [manualCustomerName, setManualCustomerName] = useState('')
 
   const [vehicleNo, setVehicleNo] = useState('')
   const [driverName, setDriverName] = useState('')
@@ -77,13 +231,131 @@ export default function GateOutwardNewPage() {
   const [items, setItems] = useState([blankItem()])
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
+  const [loadingOptions, setLoadingOptions] = useState(true)
+  const [loadWarning, setLoadWarning] = useState('')
+
+  const [customers, setCustomers] = useState(fallbackCustomers)
+  const [manualCustomers, setManualCustomers] = useState([])
+  const [productsBySource, setProductsBySource] = useState({
+    [SOURCE_INVENTORY]: fallbackInventoryProducts,
+    [SOURCE_FINISHED_GOODS]: fallbackFinishedGoodsProducts,
+  })
 
   useEffect(() => {
     const records = loadRecords()
     setGoNo(nextGoNo(records))
   }, [])
 
-  const customer = useMemo(() => CUSTOMERS.find((c) => c.id === Number(customerId)) || null, [customerId])
+  useEffect(() => {
+    let active = true
+    const persistedManual = loadManualCustomers()
+    setManualCustomers(persistedManual)
+
+    const loadOptions = async () => {
+      setLoadingOptions(true)
+      setLoadWarning('')
+
+      try {
+        const [customersRes, inventoryRes, finishedGoodsRes] = await Promise.all([
+          customersApi.list(),
+          inventoryApi.list(),
+          finishedGoodsApi.list(),
+        ])
+
+        if (!active) return
+
+        const apiCustomers = toList(customersRes)
+          .map((entry, idx) => normalizeCustomer(entry, idx, 'api-customer'))
+          .filter(Boolean)
+        const mergedCustomers = mergeCustomers(apiCustomers, persistedManual)
+
+        const inventoryProducts = uniqueProducts(
+          toList(inventoryRes)
+            .map((entry, idx) => normalizeInventoryProduct(entry, idx, 'inv'))
+            .filter(Boolean)
+        )
+        const finishedGoodsProducts = uniqueProducts(
+          toList(finishedGoodsRes)
+            .map((entry, idx) => normalizeFinishedGoodProduct(entry, idx, 'fg'))
+            .filter(Boolean)
+        )
+
+        setCustomers(mergedCustomers.length ? mergedCustomers : fallbackCustomers)
+        setProductsBySource({
+          [SOURCE_INVENTORY]: inventoryProducts,
+          [SOURCE_FINISHED_GOODS]: finishedGoodsProducts,
+        })
+      } catch {
+        if (!active) return
+
+        setCustomers(mergeCustomers(fallbackCustomers, persistedManual))
+        setProductsBySource({
+          [SOURCE_INVENTORY]: fallbackInventoryProducts,
+          [SOURCE_FINISHED_GOODS]: fallbackFinishedGoodsProducts,
+        })
+        setLoadWarning('Unable to fetch latest Settings data. Showing fallback options.')
+      } finally {
+        if (active) setLoadingOptions(false)
+      }
+    }
+
+    loadOptions()
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const unitOptions = useMemo(() => {
+    const all = new Set(UNITS)
+    Object.values(productsBySource).flat().forEach((entry) => {
+      const unitName = String(entry?.unit || '').trim()
+      if (unitName) all.add(unitName)
+    })
+    return Array.from(all)
+  }, [productsBySource])
+
+  const customer = useMemo(
+    () => customers.find((entry) => String(entry.id) === String(customerId)) || null,
+    [customerId, customers]
+  )
+
+  const getProductsForSource = (source) => productsBySource[source] || []
+
+  const getProduct = (source, productId) =>
+    getProductsForSource(source).find((entry) => String(entry.id) === String(productId)) || null
+
+  const hasStockLimit = (entry) => Number.isFinite(entry?.available)
+
+  const handleAddManualCustomer = () => {
+    const name = manualCustomerName.trim()
+    if (!name) return
+
+    const existing = customers.find((entry) => entry.name.toLowerCase() === name.toLowerCase())
+    if (existing) {
+      setCustomerId(String(existing.id))
+      setAddress(existing.address || '')
+      setManualCustomerName('')
+      setErrors((prev) => ({ ...prev, customer: undefined }))
+      return
+    }
+
+    const manualEntry = {
+      id: `manual-${Date.now()}`,
+      name,
+      address: address.trim(),
+      isManual: true,
+    }
+
+    const nextManual = mergeCustomers(manualCustomers, [manualEntry]).map((entry) => ({ ...entry, isManual: true }))
+    const nextCustomers = mergeCustomers(customers, [manualEntry])
+
+    setManualCustomers(nextManual)
+    saveManualCustomers(nextManual)
+    setCustomers(nextCustomers)
+    setCustomerId(String(manualEntry.id))
+    setManualCustomerName('')
+    setErrors((prev) => ({ ...prev, customer: undefined }))
+  }
 
   const updateItem = (key, field, value) => {
     setItems((prev) =>
@@ -91,18 +363,24 @@ export default function GateOutwardNewPage() {
         if (row.key !== key) return row
         const updated = { ...row, [field]: value, error: '' }
 
+        if (field === 'source') {
+          updated.productId = ''
+          updated.quantity = ''
+          updated.unit = unitOptions[0] || 'Unit'
+        }
+
         if (field === 'productId') {
-          const product = PRODUCTS.find((p) => p.id === Number(value))
+          const product = getProduct(updated.source, value)
           updated.unit = product?.unit || row.unit
-          if (updated.quantity && product && Number(updated.quantity) > product.available) {
+          if (updated.quantity && product && hasStockLimit(product) && Number(updated.quantity) > product.available) {
             updated.quantity = String(product.available)
             updated.error = `Quantity cannot be over ${product.available} ${product.unit}`
           }
         }
 
         if (field === 'quantity') {
-          const product = PRODUCTS.find((p) => p.id === Number(updated.productId))
-          if (product && Number(value) > product.available) {
+          const product = getProduct(updated.source, updated.productId)
+          if (product && hasStockLimit(product) && Number(value) > product.available) {
             updated.quantity = String(product.available)
             updated.error = `Quantity cannot be over ${product.available} ${product.unit}`
           }
@@ -128,28 +406,31 @@ export default function GateOutwardNewPage() {
     if (missing) nextErrors.items = 'Please complete source, product, and quantity for all rows'
 
     const overLimitRow = items.find((row) => {
-      const p = PRODUCTS.find((x) => x.id === Number(row.productId))
-      if (!p) return false
-      return Number(row.quantity) > p.available
+      const product = getProduct(row.source, row.productId)
+      if (!product || !hasStockLimit(product)) return false
+      return Number(row.quantity) > product.available
     })
 
     if (overLimitRow) nextErrors.items = 'Quantity cannot be over available stock'
 
-    const totalByProduct = items.reduce((acc, row) => {
-      const productIdNum = Number(row.productId)
-      if (!productIdNum) return acc
-      acc[productIdNum] = (acc[productIdNum] || 0) + Number(row.quantity || 0)
+    const totalBySourceAndProduct = items.reduce((acc, row) => {
+      if (!row.source || !row.productId) return acc
+      const key = `${row.source}::${row.productId}`
+      acc[key] = (acc[key] || 0) + Number(row.quantity || 0)
       return acc
     }, {})
 
-    const productOverTotal = Object.entries(totalByProduct).find(([id, total]) => {
-      const p = PRODUCTS.find((x) => x.id === Number(id))
-      return p && total > p.available
+    const productOverTotal = Object.entries(totalBySourceAndProduct).find(([key, total]) => {
+      const [source, productId] = key.split('::')
+      const product = getProduct(source, productId)
+      return product && hasStockLimit(product) && total > product.available
     })
 
     if (productOverTotal) {
-      const p = PRODUCTS.find((x) => x.id === Number(productOverTotal[0]))
-      nextErrors.items = `${p.name}: total quantity cannot be over ${p.available} ${p.unit}`
+      const [source, productId] = productOverTotal[0].split('::')
+      const product = getProduct(source, productId)
+      const sourceName = SOURCE_OPTIONS.find((entry) => entry.value === source)?.label || source
+      nextErrors.items = `${product.name} (${sourceName}): total quantity cannot be over ${product.available} ${product.unit}`
     }
 
     setErrors(nextErrors)
@@ -177,20 +458,22 @@ export default function GateOutwardNewPage() {
         numbering,
         batchNumber,
         items: items.map((row) => {
-          const p = PRODUCTS.find((x) => x.id === Number(row.productId))
+          const product = getProduct(row.source, row.productId)
           return {
-            source: row.source,
-            productId: p?.id,
-            productName: p?.name || '',
-            brand: p?.brand || '',
+            source: SOURCE_OPTIONS.find((entry) => entry.value === row.source)?.label || row.source,
+            sourceType: row.source,
+            productId: product?.id ?? row.productId,
+            productName: product?.name || '',
+            brand: product?.brand || '',
             quantity: Number(row.quantity),
-            unit: row.unit || p?.unit || 'Unit',
+            unit: row.unit || product?.unit || 'Unit',
           }
         }),
       }
 
       const next = [record, ...existing]
       saveRecords(next)
+      incrementStoreEntries('gate-outward')
       router.push('/gate-outward')
     } catch {
       setSaving(false)
@@ -216,6 +499,8 @@ export default function GateOutwardNewPage() {
         </div>
 
         <div style={s.card}>
+          {loadWarning ? <div style={s.warningBanner}>{loadWarning}</div> : null}
+
           <div style={s.topRow}>
             <div style={s.fieldGroup}>
               <label style={s.label}>GO Number:</label>
@@ -238,21 +523,44 @@ export default function GateOutwardNewPage() {
               <label style={s.label}>Customer:</label>
               <StoreThemeDropdown
                 value={customerId}
-                onChange={(nextCustomerId) => {
-                  const id = String(nextCustomerId)
+                disabled={loadingOptions}
+                onChange={(e) => {
+                  const id = e.target.value
                   setCustomerId(id)
-                  const picked = CUSTOMERS.find((c) => c.id === Number(id))
+                  const picked = customers.find((entry) => String(entry.id) === String(id))
                   setAddress(picked?.address || '')
                   setErrors((prev) => ({ ...prev, customer: undefined }))
                 }}
-                hasError={Boolean(errors.customer)}
-                variant="input"
-                placeholder="Select Customer"
-                options={[
-                  { value: '', label: 'Select Customer' },
-                  ...CUSTOMERS.map((c) => ({ value: String(c.id), label: c.name })),
-                ]}
-              />
+              >
+                <option value="">{loadingOptions ? 'Loading customers...' : 'Select Customer'}</option>
+                {customers.map((entry) => (
+                  <option key={entry.id} value={entry.id}>
+                    {entry.name}{entry.isManual ? ' (Manual)' : ''}
+                  </option>
+                ))}
+              </select>
+              <div style={s.manualCustomerRow}>
+                <input
+                  style={s.manualCustomerInput}
+                  placeholder="Type customer name and click Add"
+                  value={manualCustomerName}
+                  onChange={(e) => setManualCustomerName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleAddManualCustomer()
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  style={manualCustomerName.trim() ? s.manualCustomerBtn : s.manualCustomerBtnDisabled}
+                  onClick={handleAddManualCustomer}
+                  disabled={!manualCustomerName.trim()}
+                >
+                  Add
+                </button>
+              </div>
               {errors.customer && <span style={s.errorText}>{errors.customer}</span>}
             </div>
           </div>
@@ -264,7 +572,7 @@ export default function GateOutwardNewPage() {
                 style={{ ...s.input, ...s.textarea }}
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Auto-filled from customer selection"
+                placeholder="Auto-filled from customer selection or type manually"
               />
             </div>
             <div style={{ flex: 1 }}>
@@ -302,8 +610,14 @@ export default function GateOutwardNewPage() {
           {errors.items && <div style={s.itemsError}>{errors.items}</div>}
 
           {items.map((item, idx) => {
-            const product = PRODUCTS.find((p) => p.id === Number(item.productId))
-            const availableText = product ? `Available: ${product.available} ${product.unit}` : 'Select product to view available stock'
+            const productsForSource = getProductsForSource(item.source)
+            const product = getProduct(item.source, item.productId)
+
+            let availableText = 'Select source first'
+            if (item.source && productsForSource.length === 0) availableText = 'No products available for selected source'
+            if (item.source && productsForSource.length > 0) availableText = 'Select product to view available stock'
+            if (product && hasStockLimit(product)) availableText = `Available: ${product.available} ${product.unit}`
+            if (product && !hasStockLimit(product)) availableText = `Unit: ${product.unit}`
 
             return (
               <div key={item.key} style={s.itemBlock}>
@@ -324,19 +638,25 @@ export default function GateOutwardNewPage() {
 
                   <div style={s.itemField}>
                     {idx === 0 && <label style={s.label}>Select Product</label>}
-                    <StoreThemeDropdown
+                    <select
+                      style={s.input}
                       value={item.productId}
-                      onChange={(nextProductId) => updateItem(item.key, 'productId', String(nextProductId))}
-                      variant="input"
-                      placeholder="Select Product"
-                      options={[
-                        { value: '', label: 'Select Product' },
-                        ...PRODUCTS.map((p) => ({
-                          value: String(p.id),
-                          label: `${p.name} (${p.brand})`,
-                        })),
-                      ]}
-                    />
+                      onChange={(e) => updateItem(item.key, 'productId', e.target.value)}
+                      disabled={!item.source}
+                    >
+                      <option value="">
+                        {!item.source
+                          ? 'Select source first'
+                          : productsForSource.length === 0
+                            ? 'No products found'
+                            : 'Select Product'}
+                      </option>
+                      {productsForSource.map((entry) => (
+                        <option key={`${item.source}-${entry.id}`} value={entry.id}>
+                          {entry.name}{entry.brand ? ` (${entry.brand})` : ''}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div style={{ ...s.itemField, flex: '0 0 120px' }}>
@@ -401,6 +721,7 @@ const s = {
   cancelBtn: { background: '#f3f4f6', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13.5, fontWeight: 600, color: '#374151', cursor: 'pointer' },
 
   card: { background: '#fff', borderRadius: 14, border: '1px solid #e8f5e9', padding: 28, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
+  warningBanner: { background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 8, color: '#c2410c', fontSize: 12.5, padding: '8px 12px', marginBottom: 12 },
 
   topRow: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 20 },
   midRow: { display: 'flex', gap: 20, marginBottom: 14 },
@@ -414,6 +735,11 @@ const s = {
   input: { background: '#f0faf4', border: '1px solid #d1fae5', borderRadius: 8, padding: '9px 12px', fontSize: 13.5, color: '#1a2e1b', outline: 'none', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit' },
   inputError: { borderColor: '#fca5a5', background: '#fff5f5' },
   readonlyInput: { background: '#f0faf4', border: '1px solid #d1fae5', borderRadius: 8, padding: '9px 12px', fontSize: 13.5, color: '#374151', fontWeight: 600 },
+
+  manualCustomerRow: { display: 'flex', gap: 8, marginTop: 2 },
+  manualCustomerInput: { flex: 1, border: '1px solid #d1fae5', borderRadius: 8, padding: '7px 10px', fontSize: 12.5, color: '#1a2e1b', background: '#ffffff', outline: 'none' },
+  manualCustomerBtn: { border: 'none', borderRadius: 8, background: '#54B45B', color: '#fff', fontSize: 12.5, fontWeight: 700, padding: '7px 14px', cursor: 'pointer' },
+  manualCustomerBtnDisabled: { border: 'none', borderRadius: 8, background: '#d1d5db', color: '#fff', fontSize: 12.5, fontWeight: 700, padding: '7px 14px', cursor: 'not-allowed' },
 
   textarea: { height: 80, resize: 'vertical', fontFamily: 'inherit' },
   textareaSmall: { height: 60, resize: 'vertical', fontFamily: 'inherit' },
@@ -433,4 +759,3 @@ const s = {
 
   formFooter: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 28, paddingTop: 20, borderTop: '1px solid #f3f4f6' },
 }
-
