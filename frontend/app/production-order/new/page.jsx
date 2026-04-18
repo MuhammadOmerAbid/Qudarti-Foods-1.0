@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, ChevronDown, Plus, Save, X } from 'lucide-react'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { PACKINGS, PRODUCTS } from '@/components/store/shared/StoreShared'
+import { incrementStoreEntries } from '@/lib/storeEntryTracker'
 
 const PRODUCTION_ORDER_DRAFT_KEY = 'store.productionOrderDrafts'
 
@@ -65,6 +66,7 @@ export default function ProductionOrderNewPage() {
       const raw = window.sessionStorage.getItem(PRODUCTION_ORDER_DRAFT_KEY)
       const existing = raw ? JSON.parse(raw) : []
       window.sessionStorage.setItem(PRODUCTION_ORDER_DRAFT_KEY, JSON.stringify([payload, ...existing]))
+      incrementStoreEntries('production-order')
       router.push('/production-order')
     } catch {
       setSaving(false)

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { gateInwardApi, suppliersApi, brandsApi, categoriesApi, productsApi, unitsApi } from '@/lib/api/endpoints'
+import { incrementStoreEntries } from '@/lib/storeEntryTracker'
 import { Plus, X, ArrowLeft, Save, ChevronDown } from 'lucide-react'
 
 const DEFAULT_UNITS = ['Unit', 'Bags', 'Carton', 'Dozen', 'KG', 'Litre']
@@ -286,6 +287,7 @@ export default function GateInwardNewPage() {
         items: payloadItems,
       })
 
+      incrementStoreEntries('gate-inward')
       router.push('/gate-inward')
     } catch {
       setErrors((prev) => ({

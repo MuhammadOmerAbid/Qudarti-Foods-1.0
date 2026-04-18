@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
+import { incrementStoreEntries } from '@/lib/storeEntryTracker'
 import { ArrowLeft, Save, Plus, X, ChevronDown } from 'lucide-react'
 
 /* ─── Mock Data — replace with real API calls ─── */
@@ -54,6 +55,7 @@ export default function RequisitionNewPage() {
     setSaving(true)
     try {
       await new Promise(r => setTimeout(r, 700))
+      incrementStoreEntries('goods-requisition')
       router.push('/requisition')
     } catch { setSaving(false) }
   }

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
+import { incrementStoreEntries } from '@/lib/storeEntryTracker'
 import { ArrowLeft, Save, Plus, X } from 'lucide-react'
 
 const todayISO = () => new Date().toISOString().split('T')[0]
@@ -61,6 +62,7 @@ export default function DailyProductionNewPage() {
     setSaving(true)
     try {
       await new Promise(r => setTimeout(r, 700)) // replace with real API
+      incrementStoreEntries('daily-production', entries.length)
       router.push('/daily-production')
     } catch { setSaving(false) }
   }

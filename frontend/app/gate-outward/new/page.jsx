@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/dashboard/dashboardlayout'
 import { ArrowUpFromLine, Plus, X, ArrowLeft, Save } from 'lucide-react'
 import { customersApi, finishedGoodsApi, inventoryApi } from '@/lib/api/endpoints'
+import { incrementStoreEntries } from '@/lib/storeEntryTracker'
 import {
   CUSTOMERS,
   GATE_OUTWARD_STORAGE_KEY,
@@ -471,6 +472,7 @@ export default function GateOutwardNewPage() {
 
       const next = [record, ...existing]
       saveRecords(next)
+      incrementStoreEntries('gate-outward')
       router.push('/gate-outward')
     } catch {
       setSaving(false)
